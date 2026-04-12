@@ -1,0 +1,19 @@
+# Environment & secrets
+.env
+config.php
+
+# Docker data
+backups/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Install lock
+install/install.lock

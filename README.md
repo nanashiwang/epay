@@ -37,6 +37,112 @@
 
 ---
 
+## Docker 部署
+
+### 环境要求
+
+- Linux 服务器（Ubuntu/Debian/CentOS）
+- Git
+
+> Docker 如果未安装，初始化脚本会自动安装。
+
+### 新服务器一键部署
+
+```bash
+# 1. 克隆仓库
+git clone <your-repo-url> /opt/epay && cd /opt/epay
+
+# 2. 交互式初始化（自动安装 Docker、配置数据库、启动服务）
+bash epay.sh init
+```
+
+初始化向导会依次询问：
+- 站点域名
+- HTTP/HTTPS 端口
+- MySQL root 密码、数据库名、用户名、密码、表前缀
+
+完成后自动启动容器并输出访问地址。
+
+### 管理命令
+
+```bash
+bash epay.sh init      # 交互式初始化（首次部署）
+bash epay.sh update    # 拉取最新代码 + 备份数据库 + 重建容器
+bash epay.sh backup    # 手动备份数据库到 backups/ 目录
+bash epay.sh restart   # 重启服务
+bash epay.sh logs      # 查看实时日志
+bash epay.sh status    # 查看运行状态
+bash epay.sh ssl       # 配置 SSL 证书
+bash epay.sh down      # 停止所有服务
+```
+
+### 更新流程
+
+```bash
+cd /opt/epay
+bash epay.sh update
+```
+
+执行步骤：`git pull` → 自动备份数据库 → 重建容器 → 检测数据库版本变更并提示升级。
+
+### SSL 证书配置
+
+```bash
+# 方式一：通过 CLI 工具
+bash epay.sh ssl
+# 按提示输入证书和私钥文件路径
+
+# 方式二：手动复制
+docker cp epay.pem epay-app:/etc/nginx/ssl/epay.pem
+docker cp epay.key epay-app:/etc/nginx/ssl/epay.key
+bash epay.sh restart
+```
+
+### 从现有服务器迁移
+
+```bash
+# 1. 在旧服务器导出数据库
+mysqldump -u root -p epay > backup.sql
+
+# 2. 在新服务器初始化
+cd /opt/epay && bash epay.sh init
+
+# 3. 导入数据
+docker exec -i epay-db mysql -u root -p<password> epay < backup.sql
+```
+
+### 架构说明
+
+```
+docker-compose.yml
+├── epay-app (Nginx + PHP 8.3 FPM)
+│   ├── 项目代码挂载 /var/www/epay
+│   └── SSL 证书挂载 /etc/nginx/ssl
+└── epay-db (MySQL 8.0)
+    └── 数据持久化 Docker Volume
+```
+
+**关键设计：**
+- `config.php` 和 `.env` 不纳入 Git，代码更新不会覆盖生产配置
+- MySQL 数据通过 Docker Volume 持久化，容器重建不丢数据
+- `update` 命令执行前自动备份数据库，备份文件保留 30 天
+- 内置 Cloudflare Real IP 识别和 HTTPS 检测
+
+### 文件说明
+
+| 文件 | 说明 |
+|------|------|
+| `Dockerfile` | PHP 8.3 + Nginx Alpine 镜像定义 |
+| `docker-compose.yml` | App + MySQL 服务编排 |
+| `epay.sh` | CLI 管理工具（init/update/backup 等） |
+| `.env.example` | 环境变量模板，复制为 `.env` 使用 |
+| `docker/nginx.conf` | Nginx 站点配置（含 Cloudflare + SSL） |
+| `docker/php.ini` | PHP 运行参数 |
+| `docker/entrypoint.sh` | 容器启动脚本，自动生成 config.php |
+| `docker/supervisord.conf` | Nginx + PHP-FPM 进程管理 |
+
+---
+
 ## 打赏二维码
 
 如果你觉得对你有帮助，欢迎打赏支持 ❤️

@@ -1,0 +1,12 @@
+.env
+.git
+.gitignore
+.dockerignore
+docker-compose.yml
+Dockerfile
+backups/
+*.md
+*.txt
+docker/
+install/install.lock
+config.php
