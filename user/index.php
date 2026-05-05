@@ -49,7 +49,13 @@ include './head.php';
     border-radius: 50%;
     background: #e3dff9;
 }
+.dates{max-width:120px;}
+#incomeTable th,#incomeTable td{text-align:center;vertical-align:middle;}
+#incomeTable .income-empty{padding:30px 15px;color:#999;}
+.income-summary{padding:12px 15px;border-top:1px solid #edf1f2;background:#fafbfc;}
+.income-summary .summary-item{display:inline-block;margin-right:20px;}
 </style>
+<link href="../assets/css/datepicker.css" rel="stylesheet">
 <?php
 $rs=$DB->query("SELECT * FROM pre_settle WHERE uid={$uid} AND status=1 ORDER BY id DESC LIMIT 9");
 $max_settle=0;
@@ -231,13 +237,130 @@ if(empty($userrow['pwd'])){
           </div>
         </div>
       </div>
+	  <div class="row">
+		<div class="col-md-12">
+		  <div class="panel panel-default">
+			<div class="panel-heading font-bold">
+				收入统计
+			</div>
+			<div class="panel-body">
+				<div class="form-inline">
+					<div class="input-group input-daterange m-r-sm">
+						<input type="text" id="income_starttime" class="form-control dates" placeholder="开始日期" autocomplete="off">
+						<span class="input-group-addon"><i class="fa fa-chevron-right"></i></span>
+						<input type="text" id="income_endtime" class="form-control dates" placeholder="结束日期" autocomplete="off">
+					</div>
+					<button type="button" class="btn btn-primary" id="incomeSearchBtn"><i class="fa fa-search"></i> 查询</button>
+					<button type="button" class="btn btn-default" id="incomeRecentBtn">最近7天</button>
+					<button type="button" class="btn btn-default" id="incomeResetBtn"><i class="fa fa-refresh"></i> 重置</button>
+				</div>
+			</div>
+			<div class="table-responsive">
+				<table class="table table-striped table-bordered m-b-none" id="incomeTable">
+					<thead id="incomeTableHead">
+						<tr><th>日期</th><th>每日合计</th></tr>
+					</thead>
+					<tbody id="incomeTableBody">
+						<tr><td colspan="2" class="income-empty">收入统计加载中...</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="income-summary clearfix">
+				<span class="summary-item text-muted">统计范围：<span id="incomeRangeText">-</span></span>
+				<span class="summary-item text-muted">已支付订单：<strong id="incomeTotalOrders">0</strong> 笔</span>
+				<span class="pull-right">区间总收入：<strong class="text-primary">¥<span id="incomeTotalAmount">0.00</span></strong></span>
+			</div>
+		  </div>
+		</div>
+	  </div>
       <!-- / stats -->
 </div>
     </div>
   </div>
 
 <?php include 'foot.php';?>
+<script src="<?php echo $cdnpublic?>bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<script src="<?php echo $cdnpublic?>bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.zh-CN.min.js"></script>
 <script>
+var incomeToday = '<?php echo date("Y-m-d");?>';
+
+function formatIncomeDate(date) {
+	var year = date.getFullYear();
+	var month = date.getMonth() + 1;
+	var day = date.getDate();
+	return year + '-' + (month < 10 ? '0' + month : month) + '-' + (day < 10 ? '0' + day : day);
+}
+
+function shiftIncomeDate(dateText, offset) {
+	var date = new Date(dateText.replace(/-/g, '/'));
+	date.setDate(date.getDate() + offset);
+	return formatIncomeDate(date);
+}
+
+function setIncomeLastDays(days) {
+	$('#income_endtime').val(incomeToday);
+	$('#income_starttime').val(shiftIncomeDate(incomeToday, -(days - 1)));
+}
+
+function renderIncomeEmpty(message, colspan) {
+	$('#incomeTableHead').html('<tr><th>日期</th><th>每日合计</th></tr>');
+	$('#incomeTableBody').html('<tr><td colspan="' + (colspan || 2) + '" class="income-empty">' + message + '</td></tr>');
+}
+
+function renderIncomeStats(data) {
+	var headHtml = '<tr><th>日期</th>';
+	$.each(data.channels, function(i, channel) {
+		headHtml += '<th><img src="/assets/icon/' + channel.name + '.ico" width="16" onerror="this.style.display=\'none\'">&nbsp;' + channel.showname + '</th>';
+	});
+	headHtml += '<th>每日合计</th></tr>';
+	$('#incomeTableHead').html(headHtml);
+
+	var colspan = data.channels.length + 2;
+	if(!data.has_data){
+		$('#incomeTableBody').html('<tr><td colspan="' + colspan + '" class="income-empty">该时间段暂无收入</td></tr>');
+	}else{
+		var bodyHtml = '';
+		$.each(data.rows, function(i, row) {
+			bodyHtml += '<tr><td><strong>' + row.date + '</strong><br><span class="text-muted">' + row.order_count + ' 笔</span></td>';
+			$.each(data.channels, function(j, channel) {
+				var amount = row.amounts[channel.id] ? row.amounts[channel.id] : '0.00';
+				bodyHtml += '<td>¥' + amount + '</td>';
+			});
+			bodyHtml += '<td class="text-primary"><strong>¥' + row.total_amount + '</strong></td></tr>';
+		});
+		$('#incomeTableBody').html(bodyHtml);
+	}
+
+	$('#incomeRangeText').text(data.starttime + ' 至 ' + data.endtime);
+	$('#incomeTotalOrders').text(data.total_orders);
+	$('#incomeTotalAmount').text(data.total_amount);
+	$('#income_starttime').val(data.starttime);
+	$('#income_endtime').val(data.endtime);
+}
+
+function loadIncomeStats() {
+	renderIncomeEmpty('收入统计加载中...', $('#incomeTableHead th').length || 2);
+	$.ajax({
+		type : "GET",
+		url : "ajax2.php?act=incomeStats",
+		dataType : 'json',
+		data : {
+			starttime: $('#income_starttime').val(),
+			endtime: $('#income_endtime').val()
+		},
+		success : function(data) {
+			if(data.code == 0){
+				renderIncomeStats(data);
+			}else{
+				renderIncomeEmpty(data.msg ? data.msg : '收入统计加载失败');
+			}
+		},
+		error : function() {
+			renderIncomeEmpty('收入统计加载失败，请稍后重试');
+		}
+	});
+}
+
 $(document).ready(function(){
 	$.ajax({
 		type : "GET",
@@ -262,6 +385,21 @@ $(document).ready(function(){
 				$('#payrates').append('<td>费率：'+item.rate+' %</td>');
 			});
 		}
+	});
+	$('.input-daterange').datepicker({
+		format: 'yyyy-mm-dd',
+		autoclose: true,
+		clearBtn: true,
+		language: 'zh-CN'
+	});
+	setIncomeLastDays(7);
+	loadIncomeStats();
+	$('#incomeSearchBtn').click(function(){
+		loadIncomeStats();
+	});
+	$('#incomeRecentBtn, #incomeResetBtn').click(function(){
+		setIncomeLastDays(7);
+		loadIncomeStats();
 	});
 	<?php if(!empty($conf['modal'])){?>
 	$('#myModal').modal('show');

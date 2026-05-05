@@ -140,6 +140,103 @@ case 'getcount':
 	$result=['code'=>0, 'orders'=>$orders, 'orders_today'=>$orders_today, 'settle_money'=>$settle_money, 'order_today_all'=>$order_today_all, 'order_lastday_all'=>$order_lastday_all, 'transfer_today_all'=>$transfer_today_all, 'transfer_lastday_all'=>$transfer_lastday_all, 'channels'=>$channels];
 	exit(json_encode($result));
 break;
+case 'incomeStats':
+	$starttime = isset($_GET['starttime']) ? trim($_GET['starttime']) : (isset($_POST['starttime']) ? trim($_POST['starttime']) : '');
+	$endtime = isset($_GET['endtime']) ? trim($_GET['endtime']) : (isset($_POST['endtime']) ? trim($_POST['endtime']) : '');
+	$today = date("Y-m-d");
+
+	if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $endtime) || strtotime($endtime) === false){
+		$endtime = $today;
+	}
+	if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $starttime) || strtotime($starttime) === false){
+		$starttime = date("Y-m-d", strtotime($endtime.' -6 day'));
+	}
+	if($starttime > $endtime){
+		$tmp = $starttime;
+		$starttime = $endtime;
+		$endtime = $tmp;
+	}
+
+	$summary = $DB->getRow("SELECT COUNT(*) total_orders,SUM(money) total_amount FROM pre_order WHERE uid={$uid} AND status=1 AND date>='{$starttime}' AND date<='{$endtime}'");
+	$statlist = $DB->getAll("SELECT A.date,A.type,B.name,B.showname,SUM(A.money) money,COUNT(*) order_count FROM pre_order A LEFT JOIN pre_type B ON A.type=B.id WHERE A.uid={$uid} AND A.status=1 AND A.date>='{$starttime}' AND A.date<='{$endtime}' GROUP BY A.date,A.type ORDER BY A.date DESC,A.type ASC");
+
+	$channels = [];
+	foreach($statlist as $row){
+		$typeid = intval($row['type']);
+		if(!isset($channels[$typeid])){
+			$channels[$typeid] = [
+				'id' => $typeid,
+				'name' => !empty($row['name']) ? $row['name'] : 'type'.$typeid,
+				'showname' => !empty($row['showname']) ? $row['showname'] : '方式'.$typeid,
+			];
+		}
+	}
+	if(empty($channels)){
+		$types = \lib\Channel::getTypes($uid, $userrow['gid']);
+		foreach($types as $row){
+			$channels[intval($row['id'])] = [
+				'id' => intval($row['id']),
+				'name' => $row['name'],
+				'showname' => $row['showname'],
+			];
+		}
+	}
+	ksort($channels);
+
+	$dates = [];
+	$rows = [];
+	$channel_ids = array_keys($channels);
+	for($time = strtotime($endtime); $time >= strtotime($starttime); $time = strtotime('-1 day', $time)){
+		$date = date("Y-m-d", $time);
+		$dates[] = $date;
+		$rows[$date] = [
+			'date' => $date,
+			'amounts' => [],
+			'total_amount' => 0,
+			'order_count' => 0,
+		];
+		foreach($channel_ids as $typeid){
+			$rows[$date]['amounts'][$typeid] = 0;
+		}
+	}
+
+	foreach($statlist as $row){
+		$date = $row['date'];
+		$typeid = intval($row['type']);
+		if(!isset($rows[$date])){
+			continue;
+		}
+		$amount = round($row['money'], 2);
+		if(!isset($rows[$date]['amounts'][$typeid])){
+			$rows[$date]['amounts'][$typeid] = 0;
+		}
+		$rows[$date]['amounts'][$typeid] += $amount;
+		$rows[$date]['total_amount'] += $amount;
+		$rows[$date]['order_count'] += intval($row['order_count']);
+	}
+
+	$list = [];
+	foreach($rows as $row){
+		foreach($row['amounts'] as $typeid => $amount){
+			$row['amounts'][$typeid] = number_format($amount, 2, '.', '');
+		}
+		$row['total_amount'] = number_format($row['total_amount'], 2, '.', '');
+		$list[] = $row;
+	}
+
+	$result = [
+		'code' => 0,
+		'starttime' => $starttime,
+		'endtime' => $endtime,
+		'dates' => $dates,
+		'channels' => array_values($channels),
+		'rows' => $list,
+		'total_amount' => number_format($summary['total_amount'], 2, '.', ''),
+		'total_orders' => intval($summary['total_orders']),
+		'has_data' => intval($summary['total_orders']) > 0,
+	];
+	exit(json_encode($result));
+break;
 case 'sendcode':
 	$situation=trim($_POST['situation']);
 	$target=htmlspecialchars(strip_tags(trim($_POST['target'])));
