@@ -1,0 +1,25 @@
+name: Alipay Native QR
+
+on:
+  push:
+    branches: [main]
+    paths: ['plugins/alipaycode/**', 'tests/alipay-native-qr.php', '.github/workflows/alipay-native-qr.yml']
+  pull_request:
+    paths: ['plugins/alipaycode/**', 'tests/alipay-native-qr.php', '.github/workflows/alipay-native-qr.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PHP and native receipt matching
+        run: |
+          find plugins/alipaycode tests -name '*.php' -print0 | xargs -0 -n1 php -l
+          php tests/alipay-native-qr.php

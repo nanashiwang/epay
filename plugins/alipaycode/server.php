@@ -17,6 +17,10 @@ if(substr($channel['apptoken'], 0, 1) == '['){
 }
 $alipay_config = require(PLUGIN_ROOT.$channel['plugin'].'/inc/config.php');
 $aop = new \Alipay\AlipayBillService($alipay_config);
+if ((string)($channel['appswitch'] ?? '0') === '2') {
+    require __DIR__.'/inc/native-monitor.php';
+    exit;
+}
 
 while(true){
     $now = time();

@@ -34,13 +34,18 @@ class alipaycode_plugin
 				'type' => 'input',
 				'note' => '只有第三方应用需要填写，非第三方应用必须留空',
 			],
+			'appurl' => [
+				'name' => '原生收款码地址',
+				'type' => 'input',
+				'note' => '仅原生收款码模式使用，填写 https://qr.alipay.com/ 开头的解码地址',
+			],
 			'appswitch' => [
                 'name' => '支付类型',
                 'type' => 'select',
-                'options' => [0 => '普通转账', 1 => '转账确认单'],
+                'options' => [0 => '普通转账', 1 => '转账确认单', 2 => '原生收款码（账单确认）'],
             ],
 		],
-		'note' => '<p>可不签约支付产品，支付宝开放平台应用需要已上线，不能开启余额宝自动转入。如果是第三方应用类型，还需要填写商户授权token。</p><p>需添加守护进程，运行目录：<u>[basedir]plugins/alipaycode/</u> 启动命令：<u>php server.php [channel]</u> </p>', //支付密钥填写说明
+		'note' => '<p>可不签约支付产品，支付宝开放平台应用需要已上线，不能开启余额宝自动转入。如果是第三方应用类型，还需要填写商户授权token。</p><p>需添加守护进程，运行目录：<u>[basedir]plugins/alipaycode/</u> 启动命令：<u>php server.php [channel]</u> </p><p>原生收款码模式按金额和付款时间匹配唯一订单，同金额冲突不自动确认。收款账号应专用于本系统，勿与其他平台或线下收款混用。更改配置后需重启守护进程。</p>', //支付密钥填写说明
 		'bindwxmp' => false, //是否支持绑定微信公众号
 		'bindwxa' => false, //是否支持绑定微信小程序
 	];
@@ -55,7 +60,11 @@ class alipaycode_plugin
 
 	//扫码支付
 	static public function qrcode(){
-		global $siteurl, $cdnpublic, $order, $conf;
+		global $siteurl, $cdnpublic, $order, $conf, $channel;
+
+		if ((string)($channel['appswitch'] ?? '0') === '2') {
+			self::nativeQr();
+		}
 
 		$code_url = $siteurl.'pay/pay/'.TRADE_NO.'/';
 
@@ -72,6 +81,10 @@ class alipaycode_plugin
 	static public function pay()
 	{
 		global $siteurl, $order, $channel, $conf;
+
+		if ((string)($channel['appswitch'] ?? '0') === '2') {
+			self::nativeQr();
+		}
 
 		if($conf['alipay_wappaylogin']==1){
 			$alipay_config = require(PAY_ROOT.'inc/config.php');
@@ -101,6 +114,19 @@ class alipaycode_plugin
 
 		include PAY_ROOT.'inc/pay.page.php';
 	    exit;
+	}
+
+	private static function nativeQr()
+	{
+		global $order, $channel, $cdnpublic, $conf;
+		if (!empty($conf['alipay_wappaylogin'])) {
+			throw new Exception('当前启用了付款人身份检查，原生收款码不支持此检查，请使用已签约支付通道');
+		}
+		require_once PAY_ROOT.'inc/NativeQr.php';
+		$code_url = AlipayCodeNativeQr::codeUrl($channel['appurl'] ?? '');
+		$paytime = AlipayCodeNativeQr::remaining($order, time());
+		include PAY_ROOT.'inc/native.page.php';
+		exit;
 	}
 
 }
