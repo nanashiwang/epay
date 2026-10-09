@@ -46,3 +46,5 @@ Status: implemented
 [订阅看板](2026-10-09-subscription-dashboard.md)复用付款与权益记录，并明确余额与外部支付的统计口径。
 
 [支付异常核对](2026-10-09-payment-review.md)补充查单证据和审计，保留原付款确认边界。
+
+[更新验收](../process/2026-10-09-update-verification.md)消费任务心跳并核对当前容器标识、迁移及历史密文，失败不显示更新成功。

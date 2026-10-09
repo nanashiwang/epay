@@ -4,6 +4,10 @@ set -e
 APP_DIR="/var/www/epay"
 CONFIG_FILE="${APP_DIR}/config.php"
 
+# A fresh container start must complete its own worker rounds before acceptance.
+php -r 'file_put_contents("/run/epay-worker-instance",bin2hex(random_bytes(12)));'
+chmod 644 /run/epay-worker-instance
+
 # Prepare only the directory. Existing encrypted installations never get a replacement key.
 mkdir -p /var/lib/epay-keys
 chown www-data:www-data /var/lib/epay-keys

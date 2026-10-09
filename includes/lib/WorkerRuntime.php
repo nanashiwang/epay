@@ -3,10 +3,14 @@ namespace lib;
 
 final class WorkerRuntime
 {
+    public static function instance()
+    {
+        return is_file('/run/epay-worker-instance')?trim((string)file_get_contents('/run/epay-worker-instance')):null;
+    }
     public static function beat($db,$name,$state='ok')
     {
         if (!in_array($name,['collection','subscription'],true) || !in_array($state,['ok','error','disabled'],true)) throw new \InvalidArgumentException('Invalid worker state');
-        $data=json_encode(['at'=>time(),'pid'=>getmypid(),'state'=>$state]);
+        $data=json_encode(['at'=>time(),'pid'=>getmypid(),'state'=>$state,'instance'=>self::instance()]);
         $db->exec('INSERT INTO pre_cache (k,v,expire) VALUES (:name,:data,0) ON DUPLICATE KEY UPDATE v=VALUES(v),expire=0',[':name'=>'worker_'.$name,':data'=>$data]);
     }
 

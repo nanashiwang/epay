@@ -14,12 +14,13 @@ class PdoHelper
 	 *
 	 * @param array $dbconfig 数据库信息
 	 */
-	function __construct($dbconfig)
+	function __construct($dbconfig, $throwOnConnectError = false)
 	{
 		$this->prefix = $dbconfig['dbqz'].'_';
 		try {
 			$this->db = new \PDO("mysql:host={$dbconfig['host']};dbname={$dbconfig['dbname']};port={$dbconfig['port']}",$dbconfig['user'],$dbconfig['pwd']);
 		} catch (\Exception $e) {
+			if ($throwOnConnectError) throw new \RuntimeException('Database connection failed', 0, $e);
 			exit('链接数据库失败:' . $e->getMessage());
 		}
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_SILENT);

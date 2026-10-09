@@ -25,6 +25,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "su", "-s", "/bin/sh", "www-data", "-c", "php /var/www/epay/scripts/health-check.php --json"]
+      interval: 60s
+      timeout: 20s
+      start_period: 60s
+      retries: 3
     networks:
       - epay-net
 

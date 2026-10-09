@@ -26,3 +26,5 @@ Status: implemented
 ## Consequences
 
 增加一个常驻进程，非 Docker 部署必须新增服务。业务回调重试仍与原生码监测共用原进程；本项仅隔离套餐邮件。邮件继续采用至少一次投递。
+
+[更新验收](../process/2026-10-09-update-verification.md)消费任务心跳并核对当前容器标识、迁移及历史密文，失败不显示更新成功。

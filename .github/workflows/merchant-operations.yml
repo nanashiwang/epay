@@ -55,6 +55,8 @@ jobs:
           php tests/merchant-onboarding.php
           php tests/subscription-dashboard.php
           php tests/payment-review.php
+          php tests/runtime-health.php
+          bash tests/update-verification.sh
   docker:
     runs-on: ubuntu-latest
     steps:
@@ -62,4 +64,6 @@ jobs:
       - name: Build production image
         run: docker build -t epay-operations-test:local .
       - name: Preserve synthetic keys across recreation
-        run: sh tests/docker-operations.sh
+        run: |
+          sh tests/docker-operations.sh
+          sh tests/docker-health.sh

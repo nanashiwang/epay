@@ -162,30 +162,31 @@ cmd_update() {
         err "当前目录不是 Git 仓库，无法自动更新。"
     fi
 
+    if [ "$(git branch --show-current)" != main ]; then err "自动更新只支持 main，请先核对当前分支。"; fi
+    if ! git diff --quiet || ! git diff --cached --quiet; then err "工作区有未提交修改，请先保存并核对；不会自动 stash。"; fi
+
     # 记录当前版本
-    old_version=$(grep "define('VERSION'" includes/common.php | grep -oP "'[0-9]+'")
-    old_db_version=$(grep "define('DB_VERSION'" includes/common.php | grep -oP "'[0-9]+'")
+    old_version=$(sed -n "s/.*define('VERSION', *'\([0-9]*\)').*/\1/p" includes/common.php)
+    old_db_version=$(sed -n "s/.*define('DB_VERSION', *'\([0-9]*\)').*/\1/p" includes/common.php)
 
     # 备份数据库
     log "备份数据库..."
-    cmd_backup
+    cmd_backup || err "数据库备份失败，更新已停止。"
 
     # 拉取最新代码
     log "拉取最新代码..."
-    git stash 2>/dev/null || true
-    git pull origin main
-    git stash pop 2>/dev/null || true
+    git pull --ff-only origin main || err "拉取失败或分支存在分叉，更新已停止。"
 
     # 获取新版本号
-    new_version=$(grep "define('VERSION'" includes/common.php | grep -oP "'[0-9]+'")
-    new_db_version=$(grep "define('DB_VERSION'" includes/common.php | grep -oP "'[0-9]+'")
+    new_version=$(sed -n "s/.*define('VERSION', *'\([0-9]*\)').*/\1/p" includes/common.php)
+    new_db_version=$(sed -n "s/.*define('DB_VERSION', *'\([0-9]*\)').*/\1/p" includes/common.php)
 
     log "版本: ${old_version} -> ${new_version}"
 
     # 重建容器
     log "重建容器..."
     sh scripts/preserve-collection-key.sh
-    $COMPOSE_CMD up -d --build
+    $COMPOSE_CMD up -d --build || err "容器重建失败，更新未完成。"
 
     # 检查是否需要数据库升级
     if [ "$old_db_version" != "$new_db_version" ]; then
@@ -195,7 +196,8 @@ cmd_update() {
 
     echo ""
     log "============================================"
-    log "  更新完成！"
+    cmd_verify || err "更新后的运行验收失败，请修复上方问题后运行 bash epay.sh verify；不要重复创建密钥。"
+    log "  更新并验收完成！"
     log "  版本: ${old_version} -> ${new_version}"
     log "============================================"
 }
@@ -203,6 +205,21 @@ cmd_update() {
 # ============================================
 # epay backup - 备份数据库
 # ============================================
+cmd_verify() {
+    log "只读运行验收（不会迁移、创建密钥或发起付款）..."
+    local attempt verify_code
+    for attempt in {1..13}; do
+        if $COMPOSE_CMD exec -T --user www-data app timeout 20 php scripts/health-check.php; then
+            return 0
+        else
+            verify_code=$?
+        fi
+        # Only incomplete worker startup gets a bounded grace period.
+        if [ "$verify_code" -ne 2 ] || [ "$attempt" -eq 13 ]; then return 1; fi
+        sleep 5
+    done
+}
+
 cmd_backup() {
     if [ ! -f "$ENV_FILE" ]; then
         err ".env 文件不存在，请先运行: bash epay.sh init"
@@ -216,14 +233,16 @@ cmd_backup() {
     backup_file="${backup_dir}/epay_db_${timestamp}.sql"
 
     log "正在备份数据库到 ${backup_file} ..."
-    docker exec epay-db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$backup_file" 2>/dev/null
+    if ! docker exec epay-db mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$backup_file" 2>/dev/null; then
+        warn "数据库导出失败，未完成文件保留供核对。"; return 1
+    fi
 
     if [ -f "$backup_file" ] && [ -s "$backup_file" ]; then
-        gzip "$backup_file"
+        gzip "$backup_file" || return 1
         log "备份完成: ${backup_file}.gz ($(du -h "${backup_file}.gz" | cut -f1))"
     else
-        rm -f "$backup_file"
         warn "备份失败或数据库为空。"
+        return 1
     fi
 
     # 清理 30 天前的备份
@@ -308,6 +327,9 @@ case "${1:-}" in
         check_docker
         cmd_update
         ;;
+    verify)
+        cmd_verify
+        ;;
     preserve-key)
         sh scripts/preserve-collection-key.sh
         ;;
@@ -338,6 +360,7 @@ case "${1:-}" in
         echo "命令:"
         echo "  init      交互式初始化（首次部署）"
         echo "  update    拉取代码并更新容器"
+        echo "  verify    只读检查迁移、密钥、任务与通知积压"
         echo "  preserve-key  重建前保全旧容器收款主密钥"
         echo "  backup    备份数据库（主密钥需单独备份）"
         echo "  restart   重启服务"

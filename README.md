@@ -66,6 +66,7 @@ bash epay.sh init
 ### 管理命令
 
 ```bash
+bash epay.sh verify    # 只读运行验收
 bash epay.sh init      # 交互式初始化（首次部署）
 bash epay.sh update    # 拉取最新代码 + 备份数据库 + 重建容器
 bash epay.sh preserve-key # 重建前保全旧容器的收款主密钥
@@ -84,7 +85,7 @@ cd /opt/epay
 bash epay.sh update
 ```
 
-执行步骤：备份数据库 → `git pull` → 保全收款主密钥 → 重建容器 → 检测数据库版本变更并提示升级。
+执行步骤：检查干净的 main 分支 → 备份数据库 → `git pull --ff-only` → 保全收款主密钥 → 重建容器 → 验证迁移、密文、当前容器任务心跳与通知积压。必要检查失败时不会提示更新成功；先备份并按提示完成迁移，再运行 `bash epay.sh verify`。
 
 旧版首次升级必须先获取新脚本，并在旧容器仍运行时保全密钥。包月商户运营扩展还需要显式执行新增迁移；完整命令、备份与验收要求见[商户运营说明](docs/MERCHANT_OPERATIONS.md)。不要先删除旧容器。
 
