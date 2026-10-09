@@ -81,6 +81,7 @@ if($admin_cdnpublic==1){
               <li><a href="./ulist.php">用户列表</a></li>
 			  <li><a href="./glist.php">用户组设置</a></li>
 			  <li><a href="./group.php">用户组购买</a></li>
+              <li><a href="./subscription_overview.php">订阅运营看板</a></li>
               <li><a href="./subscriptions.php">套餐异常处理</a></li>
 			  <li><a href="./record.php">资金明细</a></li>
         <li><a href="./ustat.php">支付统计</a></li>

@@ -42,3 +42,5 @@ Status: implemented
 [订单保留](../bug-fix/2026-10-09-order-retention.md)补足历史清理入口，保留订阅与收款审计引用的主订单。
 
 [开通指南](2026-10-09-merchant-onboarding.md)补齐未开通商户入口，沿用权益和通知数据。
+
+[订阅看板](2026-10-09-subscription-dashboard.md)复用付款与权益记录，并明确余额与外部支付的统计口径。

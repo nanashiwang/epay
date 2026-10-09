@@ -23,3 +23,5 @@ Before adding a feature, inspect adjacent flows and the current source of truth;
 | Order evidence retention | Cron and admin order deletion/cleanup | [Shared predicate](../includes/lib/OrderRetention.php) | Existing snapshots, subscriptions, receipts and notification records | Protected orders remain available for late callbacks, purchase idempotency and reconciliation; ordinary cleanup retains original timing. |
 
 | Merchant onboarding | [Guide](../user/onboarding.php), new merchant home and sidebar | [Progress service](../includes/lib/MerchantOnboarding.php) | Existing plans, accounts, routing and successful business notifications | Default-group newcomers bypass legacy settlement form; eligibility remains enforced by existing payment services. |
+
+| Subscription operations dashboard | [Admin overview](../admin/subscription_overview.php) | [Report service](../includes/lib/SubscriptionDashboard.php) | Purchase/order/event joins, current entitlements | Payment-date totals split external confirmation from balance use; bounded dates, renewals, plan/day breakdown, paginated upcoming expiries; admin only. |

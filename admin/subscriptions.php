@@ -7,6 +7,7 @@ $title='套餐异常处理'; include './head.php';
 <link rel="stylesheet" href="/user/assets/css/merchant-workspace.css">
 <main class="container merchant-workspace admin-subscriptions" id="subscription-admin" data-csrf="<?=htmlspecialchars($_SESSION['subscription_admin_csrf'],ENT_QUOTES,'UTF-8')?>">
 <header class="mw-heading"><div><p class="mw-eyebrow">商户订阅</p><h1>套餐异常处理</h1><p>核对已付款但尚未开通的套餐，并保留每次处置依据。</p></div><a href="/index.php?doc=help&amp;topic=admin_plans">查看套餐说明 →</a></header>
+<p><a href="subscription_overview.php">查看订阅运营看板 →</a></p>
 <p class="mw-notice">开通不同套餐会替换当前权益，剩余价值不自动折算；请先与商户确认。登记线下处理只保存结果，不会执行退款。</p>
 <div class="mw-toolbar"><label>记录范围 <select id="sa-state"><option value="review">待处理</option><option value="resolved">已处理</option></select></label><button type="button" id="sa-refresh" class="btn btn-default">刷新</button></div>
 <p id="sa-message" role="status" aria-live="polite"></p><div id="sa-records">正在读取…</div>
