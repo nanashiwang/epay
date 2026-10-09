@@ -57,6 +57,7 @@ cmd_init() {
         read -p "是否覆盖现有配置？(y/N): " overwrite
         if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
             log "跳过配置，直接启动..."
+            sh scripts/preserve-collection-key.sh
             $COMPOSE_CMD up -d --build
             cmd_status
             return
@@ -123,6 +124,7 @@ EOF
     # 构建并启动
     echo ""
     log "正在构建和启动容器..."
+    sh scripts/preserve-collection-key.sh
     $COMPOSE_CMD up -d --build
 
     # 等待服务就绪
@@ -182,6 +184,7 @@ cmd_update() {
 
     # 重建容器
     log "重建容器..."
+    sh scripts/preserve-collection-key.sh
     $COMPOSE_CMD up -d --build
 
     # 检查是否需要数据库升级
@@ -305,6 +308,9 @@ case "${1:-}" in
         check_docker
         cmd_update
         ;;
+    preserve-key)
+        sh scripts/preserve-collection-key.sh
+        ;;
     backup)
         cmd_backup
         ;;
@@ -332,7 +338,8 @@ case "${1:-}" in
         echo "命令:"
         echo "  init      交互式初始化（首次部署）"
         echo "  update    拉取代码并更新容器"
-        echo "  backup    备份数据库"
+        echo "  preserve-key  重建前保全旧容器收款主密钥"
+        echo "  backup    备份数据库（主密钥需单独备份）"
         echo "  restart   重启服务"
         echo "  logs      查看实时日志"
         echo "  status    查看运行状态"

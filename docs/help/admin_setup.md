@@ -10,6 +10,7 @@
 php scripts/collection-setup.php --apply
 php scripts/bepusdt-setup.php --apply
 php scripts/merchant-channel-setup.php --apply
+php scripts/merchant-operations-setup.php --apply
 ```
 
 迁移创建扩展表和停用的系统模板，不自动定价、开通旧用户权益或填写商户密钥。系统模板不应被启用到全站随机通道池。
@@ -17,7 +18,9 @@ php scripts/merchant-channel-setup.php --apply
 ## 运行检查
 
 - PHP 进程和 CLI 能读取同一份站点外主密钥；容器重建后文件仍持久存在。
-- collection-worker 正常运行，处理原生码监测与自助订单通知重试。
+- collection-worker 正常运行，处理原生码监测、自助订单通知重试与已开启的套餐邮件提醒。
+- 运营迁移完成后，后台“套餐异常处理”可查看已付款冲突。
+- Docker 使用站点外主密钥持久卷；旧版首次升级须在销毁旧容器前保全原密钥，具体命令见仓库 `docs/MERCHANT_OPERATIONS.md`。
 - 支付机构能访问本站回调地址，本站能访问必要的机构接口。
 - 平台月费商户与平台通道可用，套餐购买开关、售价、周期和可见范围正确。
 - 商户页面能新增配置、保存后不回显密钥、未测试账号不能启用。

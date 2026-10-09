@@ -161,7 +161,7 @@ elseif($_GET['do']=='order'){
 	$DB->exec("update pre_channel set daystatus=0");
 
 	if($conf['invite_mode'] == 1){
-		$moneylist = $DB->getAll("SELECT uid,SUM(realmoney) money FROM pre_order WHERE status=1 AND `date`='$lastday' GROUP BY uid");
+		$moneylist = $DB->getAll("SELECT O.uid,SUM(O.realmoney) money FROM pre_order O WHERE O.status=1 AND O.`date`='$lastday' AND ".\lib\MerchantOperations::referralWhere($DB)." GROUP BY O.uid");
 		foreach($moneylist as $row){
 			$upid = $DB->findColumn('user', 'upid', ['uid'=>$row['uid']]);
 			if($upid > 0){

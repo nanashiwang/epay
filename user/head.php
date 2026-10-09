@@ -206,7 +206,7 @@ $conf = array_merge($conf, $groupconfig);
                 </a>
               </li>
 			  <?php }?>
-			  <?php if($conf['group_buy']==1){?>
+			  <?php if($conf['group_buy']==1 || \lib\MerchantSubscription::policy(['config'=>json_encode($groupconfig)])['enabled'] || !empty($conf['bepusdt_parent']) || !empty($conf['merchant_channels'])){?>
 			  <li class="<?php echo checkIfActive('groupbuy')?>">
                 <a href="groupbuy.php">
                   <i class="glyphicon glyphicon-shopping-cart"></i>

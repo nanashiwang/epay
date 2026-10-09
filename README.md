@@ -68,7 +68,8 @@ bash epay.sh init
 ```bash
 bash epay.sh init      # 交互式初始化（首次部署）
 bash epay.sh update    # 拉取最新代码 + 备份数据库 + 重建容器
-bash epay.sh backup    # 手动备份数据库到 backups/ 目录
+bash epay.sh preserve-key # 重建前保全旧容器的收款主密钥
+bash epay.sh backup    # 手动备份数据库到 backups/ 目录；主密钥单独备份
 bash epay.sh restart   # 重启服务
 bash epay.sh logs      # 查看实时日志
 bash epay.sh status    # 查看运行状态
@@ -83,7 +84,9 @@ cd /opt/epay
 bash epay.sh update
 ```
 
-执行步骤：`git pull` → 自动备份数据库 → 重建容器 → 检测数据库版本变更并提示升级。
+执行步骤：备份数据库 → `git pull` → 保全收款主密钥 → 重建容器 → 检测数据库版本变更并提示升级。
+
+旧版首次升级必须先获取新脚本，并在旧容器仍运行时保全密钥。包月商户运营扩展还需要显式执行新增迁移；完整命令、备份与验收要求见[商户运营说明](docs/MERCHANT_OPERATIONS.md)。不要先删除旧容器。
 
 ### SSL 证书配置
 

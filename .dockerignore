@@ -6,7 +6,7 @@ docker-compose.yml
 Dockerfile
 backups/
 *.md
+!docs/help/*.md
 *.txt
-docker/
 install/install.lock
 config.php

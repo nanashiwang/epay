@@ -16,7 +16,7 @@
   function button(label,run,disabled=false){const b=node('button',label,'btn btn-default');b.type='button';b.disabled=disabled;b.onclick=async()=>{b.disabled=true;try{await run();}catch(e){message(e.message);}finally{b.disabled=disabled;}};return b;}
   function fields(account){
     const spec=catalog[$('mc-plugin').value];if(!spec)return;
-    $('mc-help').textContent=spec.note;$('mc-type').replaceChildren();
+    $('mc-help').textContent=spec.note; const guides={alipay:'alipay',wxpayn:'wechat_v3',wxpay:'wechat_v2',qqpay:'qqpay',epay:'epay_gateway'}; const guide=node('a','查看本方式的字段说明 →');guide.href='/index.php?doc=help&topic='+guides[$('mc-plugin').value];guide.className='mc-inline-guide';$('mc-help').append(document.createElement('br'),guide);$('mc-type').replaceChildren();
     for(const t of types.filter(t=>spec.types.includes(t.name))){const option=node('option',t.showname);option.value=t.id;$('mc-type').append(option);}
     if(account)$('mc-type').value=account.type;
     $('mc-type').disabled=!!account;$('mc-fields').replaceChildren();
@@ -49,6 +49,7 @@
       top.append(node('h2',a.name),node('span',a.tested_at?'已测试到账':'待测试','collection-badge'));card.append(top);
       const dl=document.createElement('dl');
       for(const [key,value] of [['接入方式',catalog[a.plugin]?.name||a.plugin],['支付方式',a.type_name],['使用状态',(Number(a.status)?(active?'已启用':'套餐到期，已暂停收款'):'已停用')+(isDefault?' · 默认收款':'')],['测试到账',a.tested_at],['最近回调',a.last_callback]]){const row=document.createElement('div');row.append(node('dt',key),node('dd',value));dl.append(row);}card.append(dl);
+      const steps=node('ol','','mc-progress');steps.setAttribute('aria-label','配置进度');for(const [label,done] of [['已保存',true],['测试到账',!!a.tested_at],['启用',!!Number(a.status)],['默认收款',isDefault]]) steps.append(node('li',label,done?'done':''));card.append(steps);
       const actions=node('div','','collection-actions');
       actions.append(button('编辑',()=>edit(a),!active||!!Number(a.status)));
       actions.append(button('测试收款',()=>{$('mc-test-form').reset();$('mc-test-form').elements.id.value=a.id;$('mc-test-error').textContent='';$('mc-test-dialog').showModal();},!active));

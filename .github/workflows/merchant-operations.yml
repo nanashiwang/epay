@@ -1,0 +1,61 @@
+name: Merchant Operations
+on:
+  push:
+    branches: [main]
+    paths: ['includes/**', 'plugins/**', 'user/**', 'admin/**', 'paypage/**', 'submit2.php', 'cron.php', 'install/**', 'scripts/**', 'docker/**', 'epay.sh', 'Dockerfile', '.dockerignore', 'docker-compose.yml', 'assets/js/subscriptions-admin.js', 'tests/**', '.github/workflows/merchant-operations.yml']
+  pull_request:
+    paths: ['includes/**', 'plugins/**', 'user/**', 'admin/**', 'paypage/**', 'submit2.php', 'cron.php', 'install/**', 'scripts/**', 'docker/**', 'epay.sh', 'Dockerfile', '.dockerignore', 'docker-compose.yml', 'assets/js/subscriptions-admin.js', 'tests/**', '.github/workflows/merchant-operations.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-password
+          MYSQL_DATABASE: epay_bepusdt_operations_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -psynthetic-test-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      EPAY_TEST_DB: epay_bepusdt_operations_test
+      EPAY_TEST_HOST: 127.0.0.1
+      EPAY_TEST_PASSWORD: synthetic-test-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, curl, openssl, bcmath
+          coverage: none
+      - name: PHP and browser source checks
+        run: |
+          set -o pipefail
+          find includes/lib plugins/alipay plugins/wxpay plugins/wxpayn plugins/qqpay plugins/epay scripts tests -name '*.php' -print0 | xargs -0 -n1 php -l
+          for file in user/channels.php user/channels_api.php user/groupbuy.php user/head.php user/download.php admin/gedit.php admin/ajax_pay.php paypage/index.php paypage/ajax.php submit2.php cron.php includes/functions.php; do php -l "$file"; done
+          node --check user/assets/js/channels.js
+          node --check user/assets/js/bepusdt.js
+          node --check user/assets/js/collection.js
+          node --check assets/js/subscriptions-admin.js
+          for file in admin/subscriptions.php admin/subscriptions_api.php user/index.php user/merchant_workspace.php user/ajax2.php; do php -l "$file"; done
+          bash -n epay.sh
+          for file in scripts/preserve-collection-key.sh docker/entrypoint.sh docker/collection-runner.sh tests/docker-operations.sh; do sh -n "$file"; done
+      - name: Subscription operations on MySQL
+        run: |
+          set -o pipefail
+          php tests/merchant-operations.php | tee /tmp/operations-result
+          grep -q 'checks passed' /tmp/operations-result
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build -t epay-operations-test:local .
+      - name: Preserve synthetic keys across recreation
+        run: sh tests/docker-operations.sh

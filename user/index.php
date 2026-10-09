@@ -12,6 +12,12 @@ if(isset($_GET['invite'])){
 
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 
+[$workspaceUser,$workspaceGroup,$workspacePolicy]=\lib\MerchantSubscription::current($DB,$uid);
+if($workspacePolicy['enabled']) {
+    $title='商户工作台'; include './head.php';
+    include './merchant_workspace.php'; include './foot.php'; exit;
+}
+
 if(!$conf['reg_input_settle'] && (empty($userrow['account']) || empty($userrow['username']))){
 	exit("<script language='javascript'>window.location.href='./completeinfo.php';</script>");
 }

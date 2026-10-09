@@ -7,9 +7,15 @@ require dirname(__DIR__).'/includes/common.php';
 if (!in_array('--apply',$argv,true)) exit("用法：php scripts/collection-setup.php --apply\n先备份数据库；密钥文件必须由运行 PHP 的用户可读，并独立备份。\n");
 $keyFile=\lib\CollectionAccount::keyPath();
 if (!file_exists($keyFile)) {
+    if (!empty($conf['collection_parent'])) throw new RuntimeException('已初始化收款服务但原主密钥缺失；请恢复原文件，禁止生成替代密钥');
     $old=umask(0077); $handle=fopen($keyFile,'x');
     if (!$handle || fwrite($handle,random_bytes(32))!==32) throw new RuntimeException('无法创建加密密钥文件');
     fclose($handle); umask($old);
+}
+if (filesize($keyFile)!==32 || !is_readable($keyFile)) throw new RuntimeException('收款主密钥不可读或长度错误');
+// The managed Docker path is outside the web root and owned by the PHP service.
+if ($keyFile==='/var/lib/epay-keys/collection.key' && function_exists('posix_geteuid') && posix_geteuid()===0) {
+    if (!chown($keyFile,'www-data') || !chgrp($keyFile,'www-data') || !chmod($keyFile,0600)) throw new RuntimeException('无法设置收款主密钥权限');
 }
 foreach(explode(';',file_get_contents(ROOT.'install/collection.sql')) as $sql) {
     if (trim($sql)!=='' && $DB->exec($sql)===false) throw new RuntimeException('迁移失败');

@@ -32,11 +32,13 @@ RUN mkdir -p /var/www/epay \
     /var/log/supervisor
 
 # Copy configs
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/nginx.conf /etc/nginx/epay.conf.template
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/collection-runner.sh /usr/local/bin/epay-collection-runner
 RUN chmod +x /entrypoint.sh
+RUN chmod +x /usr/local/bin/epay-collection-runner
 
 # Copy application code
 COPY . /var/www/epay/

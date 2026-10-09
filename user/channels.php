@@ -6,6 +6,7 @@ if (empty($_SESSION['channels_csrf'])) $_SESSION['channels_csrf']=bin2hex(random
 $title='支付通道'; include './head.php';
 ?>
 <link rel="stylesheet" href="assets/css/collection.css">
+<link rel="stylesheet" href="/user/assets/css/merchant-workspace.css">
 <div id="content" class="app-content" role="main"><div class="app-content-body"><main class="collection" id="merchant-channels" data-csrf="<?=htmlspecialchars($_SESSION['channels_csrf'],ENT_QUOTES,'UTF-8')?>">
 <header class="collection-header"><div><div class="collection-eyebrow">我的收款配置</div><h1>支付通道</h1><p>使用自己的支付账号收款，由你管理密钥和默认通道。</p></div><button class="btn btn-primary" id="mc-add" disabled>＋ 添加支付通道</button></header>
 <nav class="collection-tabs" aria-label="收款方式"><a class="btn btn-primary" href="channels.php" aria-current="page">支付通道</a><?php if(!empty($conf['collection_parent'])){?><a class="btn btn-default" href="collection.php">支付宝收款码</a><?php } if(!empty($conf['bepusdt_parent'])){?><a class="btn btn-default" href="bepusdt.php">USDT / BEpusdt</a><?php } ?><a class="btn btn-default" href="groupbuy.php">我的套餐</a></nav>

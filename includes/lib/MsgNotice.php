@@ -171,6 +171,16 @@ class MsgNotice
         }
     }
 
+    public static function subscriptionReminder($user,$group,$notice){
+        global $conf;
+        if ((int)($conf['msgconfig_group']??0)!==1 || !filter_var($user['email']??'',FILTER_VALIDATE_EMAIL)) return false;
+        return self::send_mail_msg('subscription', $user['email'], [
+            'group'=>htmlspecialchars($group['name'],ENT_QUOTES,'UTF-8'),
+            'endtime'=>htmlspecialchars($user['endtime'],ENT_QUOTES,'UTF-8'),
+            'message'=>htmlspecialchars($notice['text'],ENT_QUOTES,'UTF-8')
+        ]);
+    }
+
     private static function send_mail_msg($scene, $receiver, $param){
         global $conf, $CACHE;
         [$title, $content] = self::get_msg_tpl($scene, $param);
@@ -269,6 +279,9 @@ class MsgNotice
         }elseif($scene == 'balance'){
             $title = '商户余额不足提醒 - '.$conf['sitename'];
             $content = '尊敬的商户，您的手续费余额不足'.$param['msgmoney'].'元，为避免造成订单失败请及时充值。<br/>当前余额：'.$param['money'].'元';
+        }elseif($scene == 'subscription'){
+            $title = '包月套餐续期提醒 - '.$conf['sitename'];
+            $content = '套餐：'.$param['group'].'<br/>到期时间：'.$param['endtime'].'<br/>'.$param['message'].'<br/>请登录商户中心查看我的套餐。不会自动扣款。';
         }elseif($scene == 'group'){
             $title = '会员用户组到期提醒 - '.$conf['sitename'];
             $content = '尊敬的商户，您的购买的会员用户组 <b>'.$param['group'].'</b> 已于 '.$param['endtime'].' 到期，请及时前往商户平台续费。';

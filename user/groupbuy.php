@@ -9,7 +9,8 @@ include './head.php';
 </style>
 <?php
 
-if($conf['group_buy']==0)exit('未开启购买会员');
+$purchaseOpen=!empty($conf['group_buy']);
+$purchaseError=$purchaseOpen?'':'套餐购买暂未开放，当前权益和历史记录仍可查看。';
 
 $paytype = [];
 $paytypes = [];
@@ -38,12 +39,15 @@ function display_info($info){
 }
 
 $urow = $DB->getRow("SELECT uid,gid FROM pre_user WHERE uid='{$conf['reg_pay_uid']}' limit 1");
-if(!$urow)exit('购买会员收款商户不存在');
+$paytypem=[];
+if (!$urow && $purchaseOpen) { $purchaseOpen=false; $purchaseError='平台收款配置暂不可用，请联系管理员；历史记录仍可查看。'; }
+if ($purchaseOpen) {
 $GLOBALS['platform_payment']=true;
 $paytypem = \lib\Channel::getTypes($urow['uid'], $urow['gid']);
 unset($GLOBALS['platform_payment']);
+}
 
-$list = $DB->getAll("SELECT * FROM pre_group WHERE isbuy=1 ORDER BY SORT ASC");
+$list = $purchaseOpen?$DB->getAll("SELECT * FROM pre_group WHERE isbuy=1 ORDER BY SORT ASC"):[];
 $group=[];
 foreach($list as $row){
 	$group[$row['gid']] = $row['name'];
@@ -54,7 +58,7 @@ $_SESSION['csrf_token'] = $csrf_token;
 $mygroup = $DB->getRow("SELECT * FROM pre_group WHERE gid='{$userrow['gid']}'");
 $mygroupname = $mygroup['name'] ? $mygroup['name'] : '默认用户组';
 $gexpire = $userrow['endtime'] ? date("Y-m-d H:i:s", strtotime($userrow['endtime'])) : '永久';
-if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript:buy('.$userrow['gid'].',1)">续期</a>]';
+if($purchaseOpen && $userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript:buy('.$userrow['gid'].',1)">续期</a>]';
 ?>
  <div id="content" class="app-content" role="main">
     <div class="app-content-body ">
@@ -63,6 +67,8 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
   <h1 class="m-n font-thin h3">我的套餐</h1>
 </div>
 <div class="wrapper-md control">
+<?php $planNotice=\lib\MerchantSubscription::policy($mygroup?:[])['enabled']?\lib\MerchantOperations::reminder($userrow):null; if ($planNotice) echo '<div class="alert alert-warning">'.htmlspecialchars($planNotice['text'],ENT_QUOTES,'UTF-8').'</div>'; ?>
+<?php if ($purchaseError) echo '<div class="alert alert-info">'.htmlspecialchars($purchaseError,ENT_QUOTES,'UTF-8').'</div>'; ?>
 <?php if(isset($msg)){?>
 <div class="alert alert-info">
 	<?php echo $msg?>
@@ -97,16 +103,17 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
 		<div class="list-group-item">
 		  <b>到期时间：</b><font color="green"><?php echo $gexpire?></font>
 		</div>
-		<?php if (!empty($conf['bepusdt_parent']) || !empty($conf['merchant_channels'])) {
+		<?php if (\lib\MerchantOperations::table($DB,'subscription_purchase')) {
     $entitlement=\lib\MerchantSubscription::policy($mygroup?:[]);
     ?><div class="list-group-item"><b>商户自助收款：</b><?php echo $entitlement['enabled'] && $userrow['endtime'] && strtotime($userrow['endtime'])>time()?'有效，最多 '.$entitlement['limit'].' 个账号':'未开通或已到期'; ?>。按自然月预付续期，月末按目标月份最后一天计算，不自动扣款。<a href="<?php echo !empty($conf['merchant_channels'])?'channels.php':'bepusdt.php'; ?>">管理支付通道</a></div>
     <details class="list-group-item"><summary>最近 20 笔套餐付款与权益记录</summary><div class="table-responsive"><table class="table"><thead><tr><th>订单 / 时间</th><th>金额 / 月数</th><th>状态</th><th>原到期 / 新到期</th></tr></thead><tbody>
-    <?php $events=$DB->getAll('SELECT P.trade_no,P.created_at,O.money,O.status,O.param,E.months,E.state,E.old_endtime,E.new_endtime FROM pre_subscription_purchase P JOIN pre_order O ON O.trade_no=P.trade_no LEFT JOIN pre_subscription_event E ON E.trade_no=P.trade_no WHERE P.uid=:uid ORDER BY P.created_at DESC LIMIT 20',[':uid'=>$uid]);
+    <?php $auditAvailable=\lib\MerchantOperations::table($DB,'subscription_resolution'); $auditFields=$auditAvailable?',R.reason,R.reference':',NULL reason,NULL reference'; $auditJoin=$auditAvailable?' LEFT JOIN pre_subscription_resolution R ON R.trade_no=P.trade_no':''; $events=$DB->getAll('SELECT P.trade_no,P.created_at,O.money,O.status,O.param,E.months,E.state,E.old_endtime,E.new_endtime'.$auditFields.' FROM pre_subscription_purchase P JOIN pre_order O ON O.trade_no=P.trade_no LEFT JOIN pre_subscription_event E ON E.trade_no=P.trade_no'.$auditJoin.' WHERE P.uid=:uid ORDER BY P.created_at DESC,P.trade_no DESC LIMIT 20',[':uid'=>$uid]);
     foreach ($events?:[] as $event) { ?>
-    <tr><td><?php echo htmlspecialchars($event['trade_no'].' / '.$event['created_at'],ENT_QUOTES,'UTF-8'); ?></td><td>¥<?php echo htmlspecialchars($event['money'],ENT_QUOTES,'UTF-8'); ?> / <?php echo (int)($event['months']??(json_decode($event['param'],true)['months']??0)); ?></td><td><?php echo $event['state']==='applied'?'已生效':($event['state']==='review'?'已付款，套餐变更待管理员处理':((int)$event['status']===1?'已付款':'待付款')); ?></td><td><?php echo htmlspecialchars(($event['old_endtime']?:'—').' / '.($event['new_endtime']?:'—'),ENT_QUOTES,'UTF-8'); ?></td></tr>
-    <?php } if (!$events) echo '<tr><td colspan="4">暂无套餐记录</td></tr>'; ?></tbody></table></div></details>
+    <tr><td><?php echo htmlspecialchars($event['trade_no'].' / '.$event['created_at'],ENT_QUOTES,'UTF-8'); ?></td><td>¥<?php echo htmlspecialchars($event['money'],ENT_QUOTES,'UTF-8'); ?> / <?php echo (int)($event['months']??(json_decode($event['param'],true)['months']??0)); ?></td><td><?php echo $event['state']==='applied'?'已生效':($event['state']==='review'?'已付款，套餐变更待管理员处理':($event['state']==='closed'?'已登记线下处理':((int)$event['status']===1?'已付款':'待付款'))); ?></td><td><?php echo htmlspecialchars(($event['old_endtime']?:'—').' / '.($event['new_endtime']?:'—'),ENT_QUOTES,'UTF-8'); ?></td></tr>
+    <?php if ($event['reason']) echo '<tr><td colspan="4">处理说明：'.htmlspecialchars($event['reason'].($event['reference']?'；凭证：'.$event['reference']:''),ENT_QUOTES,'UTF-8').'</td></tr>'; } if (!$events) echo '<tr><td colspan="4">暂无套餐记录</td></tr>'; ?></tbody></table></div></details>
 <?php } ?>
         <div class="line line-dashed b-b line-lg pull-in"></div>
+        <?php if ($purchaseOpen) { ?>
         <table class="table table-striped table-hover">
           <thead><tr><th>会员等级</th><th>可用支付通道及费率</th><th>售价</th><th>操作</th></tr></thead>
           <tbody>
@@ -121,6 +128,7 @@ foreach($list as $res){
 ?>
 		  </tbody>
         </table>
+        <?php } ?>
 		</div>
 	</div>
 	</div>

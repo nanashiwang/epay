@@ -8,9 +8,10 @@ services:
       - "${APP_SSL_PORT:-443}:443"
     volumes:
       - ./:/var/www/epay
-      - ./docker/nginx.conf:/etc/nginx/http.d/default.conf:ro
+      - ./docker/nginx.conf:/etc/nginx/epay.conf.template:ro
       - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
       - ssl_certs:/etc/nginx/ssl
+      - collection_keys:/var/lib/epay-keys
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -19,6 +20,8 @@ services:
       - DB_NAME=${DB_NAME:-epay}
       - DB_PREFIX=${DB_PREFIX:-pay}
       - SITE_DOMAIN=${SITE_DOMAIN:-localhost}
+      - HTTP_HOST=${SITE_DOMAIN:-localhost}
+      - EPAY_COLLECTION_KEY_FILE=/var/lib/epay-keys/collection.key
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +53,8 @@ services:
 volumes:
   db_data:
   ssl_certs:
+  collection_keys:
+    name: ${EPAY_COLLECTION_KEY_VOLUME:-epay_collection_keys}
 
 networks:
   epay-net:

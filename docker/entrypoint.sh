@@ -4,6 +4,16 @@ set -e
 APP_DIR="/var/www/epay"
 CONFIG_FILE="${APP_DIR}/config.php"
 
+# Prepare only the directory. Existing encrypted installations never get a replacement key.
+mkdir -p /var/lib/epay-keys
+chown www-data:www-data /var/lib/epay-keys
+chmod 700 /var/lib/epay-keys
+if [ -f /var/lib/epay-keys/collection.key ]; then
+    [ "$(wc -c < /var/lib/epay-keys/collection.key | tr -d ' ')" = 32 ] || { echo '收款主密钥长度错误' >&2; exit 1; }
+    chown www-data:www-data /var/lib/epay-keys/collection.key
+    chmod 600 /var/lib/epay-keys/collection.key
+fi
+
 # Generate config.php from environment variables if it doesn't have DB credentials
 if [ -n "$DB_HOST" ] && [ -n "$DB_PASS" ]; then
     if ! grep -q "'user' => '${DB_USER}'" "$CONFIG_FILE" 2>/dev/null; then
@@ -25,12 +35,14 @@ PHPEOF
     fi
 fi
 
-# Remove SSL server block if no certificate exists
+# Render a writable runtime config from the read-only template on every start.
 if [ ! -f /etc/nginx/ssl/epay.pem ]; then
     echo "[epay] No SSL certificate found, disabling HTTPS server block..."
-    # Create a minimal nginx config without SSL
-    sed -i '/^server {$/,/^}$/{ /listen 443/,/^}$/d; }' /etc/nginx/http.d/default.conf 2>/dev/null || true
+    awk '/^# BEGIN HTTPS/{exit} {print}' /etc/nginx/epay.conf.template > /etc/nginx/http.d/default.conf
+else
+    cp /etc/nginx/epay.conf.template /etc/nginx/http.d/default.conf
 fi
+nginx -t
 
 # Wait for MySQL and run initial setup if needed
 if [ ! -f "${APP_DIR}/install/install.lock" ] && [ -f "${APP_DIR}/install/install.sql" ]; then

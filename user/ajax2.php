@@ -113,14 +113,14 @@ case 'getcount':
 	$lastday=date("Y-m-d",strtotime("-1 day"));
 	$today=date("Y-m-d");
 
-	$orders=$DB->getColumn("SELECT count(*) FROM pre_order WHERE uid={$uid} AND status=1");
-	$orders_today=$DB->getColumn("SELECT count(*) from pre_order WHERE uid={$uid} AND status=1 AND date='$today'");
+	$orders=$DB->getColumn("SELECT count(*) FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1");
+	$orders_today=$DB->getColumn("SELECT count(*) from pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date='$today'");
 
 	$settle_money=$DB->getColumn("SELECT sum(realmoney) FROM pre_settle WHERE uid={$uid} and status=1");
 	$settle_money=round($settle_money,2);
 
-	$order_today_all = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$today'"),2);
-	$order_lastday_all = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$lastday'"),2);
+	$order_today_all = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date='$today'"),2);
+	$order_lastday_all = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date='$lastday'"),2);
 
 	$transfer_today_all = round($DB->getColumn("SELECT sum(money) FROM pre_transfer WHERE uid={$uid} AND status<>2 AND addtime>='$today'"),2);
 	$transfer_lastday_all = round($DB->getColumn("SELECT sum(money) FROM pre_transfer WHERE uid={$uid} AND status<>2 AND addtime>='$lastday' AND addtime<'$today'"),2);
@@ -128,10 +128,10 @@ case 'getcount':
 	$channels = [];
 	$types = \lib\Channel::getTypes($uid, $userrow['gid']);
 	foreach($types as $row){
-		$order_today = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$today' AND type={$row['id']}"),2);
-		$order_lastday = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$lastday' AND type={$row['id']}"),2);
+		$order_today = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date='$today' AND type={$row['id']}"),2);
+		$order_lastday = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date='$lastday' AND type={$row['id']}"),2);
 
-		$orderrow = $DB->getRow("SELECT COUNT(*) allnum,COUNT(IF(status>0, 1, NULL)) sucnum FROM pre_order WHERE uid={$uid} AND addtime>='$today' AND type={$row['id']}");
+		$orderrow = $DB->getRow("SELECT COUNT(*) allnum,COUNT(IF(status>0, 1, NULL)) sucnum FROM pre_order WHERE uid={$uid} AND tid=0 AND addtime>='$today' AND type={$row['id']}");
 		$success_rate = $orderrow && $orderrow['allnum'] > 0 ? round($orderrow['sucnum']/$orderrow['allnum']*100,2) : 100;
 
 		$channels[] = ['name'=>$row['name'], 'showname'=>$row['showname'], 'rate'=>round(100-$row['rate'], 2), 'order_today'=>$order_today, 'order_lastday'=>$order_lastday, 'success_rate'=>$success_rate];
@@ -157,8 +157,8 @@ case 'incomeStats':
 		$endtime = $tmp;
 	}
 
-	$summary = $DB->getRow("SELECT COUNT(*) total_orders,SUM(money) total_amount FROM pre_order WHERE uid={$uid} AND status=1 AND date>='{$starttime}' AND date<='{$endtime}'");
-	$statlist = $DB->getAll("SELECT A.date,A.type,B.name,B.showname,SUM(A.money) money,COUNT(*) order_count FROM pre_order A LEFT JOIN pre_type B ON A.type=B.id WHERE A.uid={$uid} AND A.status=1 AND A.date>='{$starttime}' AND A.date<='{$endtime}' GROUP BY A.date,A.type ORDER BY A.date DESC,A.type ASC");
+	$summary = $DB->getRow("SELECT COUNT(*) total_orders,SUM(money) total_amount FROM pre_order WHERE uid={$uid} AND tid=0 AND status=1 AND date>='{$starttime}' AND date<='{$endtime}'");
+	$statlist = $DB->getAll("SELECT A.date,A.type,B.name,B.showname,SUM(A.money) money,COUNT(*) order_count FROM pre_order A LEFT JOIN pre_type B ON A.type=B.id WHERE A.uid={$uid} AND A.tid=0 AND A.status=1 AND A.date>='{$starttime}' AND A.date<='{$endtime}' GROUP BY A.date,A.type ORDER BY A.date DESC,A.type ASC");
 
 	$channels = [];
 	foreach($statlist as $row){
