@@ -161,6 +161,9 @@ $conf = array_merge($conf, $groupconfig);
 				  <?php }?>
                 </ul>
               </li>
+              <?php if(!empty($conf['collection_parent'])){?>
+              <li class="<?php echo checkIfActive('collection')?>"><a href="collection.php"><i class="fa fa-qrcode"></i><span>收款账号</span></a></li>
+              <?php }?>
               <li class="line dk"></li>
               <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
                 <span>查询</span>

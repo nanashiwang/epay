@@ -1,0 +1,20 @@
+[Unit]
+Description=Epay merchant collection bill monitor
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/epay
+Environment=HTTP_HOST=epay.meta-api.vip
+ExecStart=/usr/bin/php /var/www/epay/scripts/collection-worker.php
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

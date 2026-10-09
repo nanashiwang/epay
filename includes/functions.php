@@ -1,5 +1,5 @@
 <?php
-function curl_get($url)
+function curl_get($url, &$request_meta = null)
 {
 	global $conf;
 	$ch=curl_init($url);
@@ -34,6 +34,7 @@ function curl_get($url)
 	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36');
 	curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 	$content=curl_exec($ch);
+	$request_meta = ['http_code'=>(int)curl_getinfo($ch,CURLINFO_HTTP_CODE),'duration_ms'=>(int)round(curl_getinfo($ch,CURLINFO_TOTAL_TIME)*1000),'error'=>curl_errno($ch)];
 	curl_close($ch);
 	return $content;
 }
@@ -547,7 +548,25 @@ function get_main_host($url){
 }
 
 function do_notify($url){
-	$return = curl_get($url);
+	global $DB,$conf;
+	if (\lib\CollectionAccount::$settling) {
+		\lib\CollectionAccount::$effects[] = function() use($url,$DB) {
+			if (do_notify($url)) {
+				$o=\lib\CollectionNotify::order($DB,$url);
+				if ($o) $DB->update('order',['notify'=>0,'notifytime'=>null],['trade_no'=>$o['trade_no']]);
+			}
+		};
+		return false;
+	}
+	$meta=[];
+	$o=!empty($conf['collection_parent']) ? \lib\CollectionNotify::order($DB,$url) : null;
+	$return = $o ? \lib\CollectionNotify::transport($url,$meta) : curl_get($url,$meta);
+	if ($o) {
+		try {
+			\lib\CollectionNotify::record($DB,$o,$meta,$return,\lib\CollectionNotify::accepted($meta,$return));
+		} catch (\Throwable $e) { error_log('collection callback log unavailable'); }
+	}
+	if ($o) return \lib\CollectionNotify::accepted($meta,$return);
 	if(strpos($return,'success')!==false || strpos($return,'SUCCESS')!==false || strpos($return,'Success')!==false){
 		return true;
 	}else{
@@ -636,7 +655,9 @@ function processOrder(&$srow,$notify=true){
 			if($black){
 				$srow['black'] = true;
 				$params = ['trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5($srow['trade_no'].SYS_KEY.$srow['trade_no'])];
-				get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params));
+				if (\lib\CollectionAccount::$settling) {
+                        \lib\CollectionAccount::$effects[] = function() use($conf,$params) { get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params)); };
+                    } else { get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params)); }
 				return;
 			}
 		}
@@ -675,7 +696,9 @@ function processOrder(&$srow,$notify=true){
 				$DB->exec("UPDATE pre_order SET notify=-1 WHERE trade_no='{$srow['trade_no']}'");
 				if($conf['black_payact'] == 2){
 					$params = ['trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5($srow['trade_no'].SYS_KEY.$srow['trade_no'])];
-            		get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params));
+					if (\lib\CollectionAccount::$settling) {
+                        \lib\CollectionAccount::$effects[] = function() use($conf,$params) { get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params)); };
+                    } else { get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params)); }
 				}
 				return;
 			}
@@ -777,7 +800,8 @@ function changeUserMoney($uid, $money, $add=true, $type=null, $orderid=null){
 		$isrefund = $DB->getColumn("SELECT id FROM pre_record WHERE uid=:uid AND type='代付退回' AND trade_no=:orderid LIMIT 1", [':uid'=>$uid, ':orderid'=>$orderid]);
 		if($isrefund)return;
 	}
-	$DB->beginTransaction();
+	$ownTransaction = !$DB->db->inTransaction();
+	if ($ownTransaction) $DB->beginTransaction();
 	$oldmoney = $DB->getColumn("SELECT money FROM pre_user WHERE uid=:uid LIMIT 1 FOR UPDATE", [':uid'=>$uid]);
 	if($add == true){
 		$action = 1;
@@ -788,7 +812,7 @@ function changeUserMoney($uid, $money, $add=true, $type=null, $orderid=null){
 	}
 	$res = $DB->exec("UPDATE pre_user SET money=:money WHERE uid=:uid", [':money'=>$newmoney, ':uid'=>$uid]);
 	$DB->insert('record', ['uid'=>$uid, 'action'=>$action, 'money'=>$money, 'oldmoney'=>$oldmoney, 'newmoney'=>$newmoney, 'type'=>$type, 'trade_no'=>$orderid, 'date'=>'NOW()']);
-	$DB->commit();
+	if ($ownTransaction) $DB->commit();
 	return $res;
 }
 

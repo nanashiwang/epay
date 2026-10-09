@@ -33,6 +33,11 @@ class Channel {
 		$channel = ['id'=>$value['id'], 'subid'=>$value['subid'], 'name'=>$value['name'], 'subname'=>$value['subname'], 'mode'=>$value['mode'], 'type'=>$value['type'], 'plugin'=>$value['plugin'], 'apptype'=>$value['apptype'], 'appwxmp'=>$value['appwxmp'], 'appwxa'=>$value['appwxa'], 'costrate'=>$value['costrate'], 'daytop'=>$value['daytop'], 'daymaxorder'=>$value['daymaxorder']];
 
 		$config = json_decode($value['config'], true);
+		if (!empty($config['collection_managed'])) {
+			$accounts = new CollectionAccount($DB);
+			$owner = $DB->getColumn('SELECT uid FROM pre_collection_account WHERE id=:id', [':id'=>$id]);
+			return array_merge($channel, $accounts->config($accounts->owned($owner, $id)));
+		}
 		if(!empty($value['info']) && !empty($config)){
 			$arr = json_decode($value['info'], true);
 			foreach($config as $configkey => $configrow){
@@ -145,6 +150,10 @@ class Channel {
 			else{
 				$channel = -1;
 				$money_rate = null;
+			}
+			if (!empty($GLOBALS['conf']['collection_parent']) && $channel!=0) {
+				$managed = CollectionAccount::route($DB,$uid,$typeid,$typename,$money,$money_rate);
+				if ($managed !== null) return $managed;
 			}
 			if($channel==0){ //当前商户关闭该通道
 				return false;
@@ -280,6 +289,10 @@ class Channel {
 				return ['typeid'=>$typeid, 'typename'=>$typename, 'plugin'=>$row['plugin'], 'channel'=>$channel, 'subchannel'=>0, 'rate'=>$money_rate, 'apptype'=>$row['apptype'], 'mode'=>$row['mode'], 'paymin'=>$row['paymin'], 'paymax'=>$row['paymax'],'timestart'=>$row['timestart'],'timestop'=>$row['timestop']];
 			}
 		}else{
+			if (!empty($GLOBALS['conf']['collection_parent'])) {
+				$managed = CollectionAccount::route($DB,$uid,$typeid,$typename,$money,null);
+				if ($managed !== null) return $managed;
+			}
 			//未设置用户组
 			$row=$DB->getRow("SELECT id,plugin,status,rate,apptype,mode,paymin,paymax,timestart,timestop FROM pre_channel WHERE type='$typeid' AND status=1 AND daystatus=0 ORDER BY rand() LIMIT 1");
 			if($row){
@@ -353,6 +366,15 @@ class Channel {
 				else{
 					$paytype[$id]['rate']=$DB->getColumn("SELECT rate FROM pre_channel WHERE type='$id' AND status=1 limit 1");
 				}
+			}
+		}
+		if (!empty($GLOBALS['conf']['collection_parent'])) {
+			foreach ($rows as $typeRow) {
+				$id=$typeRow['id'];
+				if (isset($info[$id]) && $info[$id]['channel']==0) continue;
+				$managed=CollectionAccount::route($DB,$uid,$id,$typeRow['name'],0,$info[$id]['rate']??null);
+				if ($managed===false) unset($paytype[$id]);
+				elseif ($managed!==null) { $paytype[$id]=$typeRow; $paytype[$id]['rate']=$managed['rate']; }
 			}
 		}
 		return $paytype;

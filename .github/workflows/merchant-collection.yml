@@ -1,0 +1,41 @@
+name: Merchant Collection
+on:
+  push:
+    branches: [main]
+    paths: ['includes/**', 'user/collection*', 'user/assets/**/collection.*', 'plugins/alipaycode/**', 'install/collection.sql', 'scripts/collection*', 'tests/**', '.github/workflows/merchant-collection.yml']
+  pull_request:
+    paths: ['includes/**', 'user/collection*', 'user/assets/**/collection.*', 'plugins/alipaycode/**', 'install/collection.sql', 'scripts/collection*', 'tests/**', '.github/workflows/merchant-collection.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-password
+          MYSQL_DATABASE: epay_collection_ci_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -psynthetic-test-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      EPAY_TEST_DB: epay_collection_ci_test
+      EPAY_TEST_HOST: 127.0.0.1
+      EPAY_TEST_PASSWORD: synthetic-test-password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and isolated MySQL flow checks
+        run: |
+          find includes/lib plugins/alipaycode scripts tests -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l includes/functions.php
+          php -l user/collection_api.php
+          php -l user/collection.php
+          node --check user/assets/js/collection.js
+          php tests/merchant-collection.php | tee /tmp/collection-result
+          grep -q 'checks passed' /tmp/collection-result
+          php tests/alipay-native-qr.php

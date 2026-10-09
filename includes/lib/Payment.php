@@ -276,7 +276,7 @@ class Payment {
     static public function processOrder($isnotify, $order, $api_trade_no, $buyer = null, $bill_trade_no = null, $bill_mch_trade_no = null, $end_time = null){
         global $DB,$conf,$siteurl;
         if($order['status']==0 || $order['status']==4){
-            if($DB->exec("UPDATE `pre_order` SET `status`=1 WHERE `trade_no`='".$order['trade_no']."'")){
+            if($DB->exec("UPDATE `pre_order` SET `status`=1 WHERE `trade_no`='".$order['trade_no']."' AND status IN (0,4)")){
 
                 $data = ['endtime'=>'NOW()', 'date'=>'CURDATE()'];
                 if(!empty($api_trade_no)){
@@ -291,7 +291,7 @@ class Payment {
                 if(!empty($bill_mch_trade_no)) $data['bill_mch_trade_no'] = $bill_mch_trade_no;
                 if(!empty($end_time)){
                     $data['endtime'] = $end_time;
-                    $date['date'] = date('Y-m-d', strtotime($end_time));
+                    $data['date'] = date('Y-m-d', strtotime($end_time));
                 }
                 if($order['settle']>0) $data['settle'] = $order['settle'];
                 $DB->update('order', $data, ['trade_no'=>$order['trade_no']]);

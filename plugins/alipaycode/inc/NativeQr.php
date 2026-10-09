@@ -72,7 +72,7 @@ final class AlipayCodeNativeQr
             if (!is_array($config)) continue;
             // Parameterized parent channels are included conservatively because they can share a payee.
             $uid = (string)($config['appmchid'] ?? '');
-            if ($uid === (string)$channel['appmchid'] || substr($uid, 0, 1) === '['
+            if (!empty($config['collection_managed']) || $uid === (string)$channel['appmchid'] || substr($uid, 0, 1) === '['
                 || (!empty($config['appid']) && $config['appid'] === $channel['appid'])) {
                 $ids[] = (int)$row['id'];
             }

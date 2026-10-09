@@ -6,6 +6,10 @@ use Exception;
 class MsgNotice
 {
     public static function send($scene, $uid, $param){
+        if (CollectionAccount::$settling) {
+            CollectionAccount::$effects[] = function() use($scene,$uid,$param) { self::send($scene,$uid,$param); };
+            return;
+        }
         global $DB, $conf;
         $scene_all = ['complain', 'mchrisk'];
         if($uid == 0){

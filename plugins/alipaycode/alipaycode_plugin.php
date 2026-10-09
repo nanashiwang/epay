@@ -125,6 +125,9 @@ class alipaycode_plugin
 		require_once PAY_ROOT.'inc/NativeQr.php';
 		$code_url = AlipayCodeNativeQr::codeUrl($channel['appurl'] ?? '');
 		$paytime = AlipayCodeNativeQr::remaining($order, time());
+		if ($paytime > 0 && !empty($channel['collection_managed'])) {
+			(new \lib\CollectionAccount($GLOBALS['DB']))->reserve($order, $channel);
+		}
 		include PAY_ROOT.'inc/native.page.php';
 		exit;
 	}
