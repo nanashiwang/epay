@@ -139,11 +139,15 @@
     {
       "id": "bepusdt",
       "category": "支付配置",
-      "title": "配置 USDT / BEpusdt",
-      "summary": "自行管理网关、Token、网络与精确币额。",
+      "title": "配置 USDT / USDC / BEpusdt",
+      "summary": "按币种与网络配置网关、独立验收及默认路由。",
       "keywords": [
         "USDT",
+        "USDC",
         "TRC20",
+        "Ethereum",
+        "Base",
+        "Solana",
         "虚拟币",
         "链上",
         "Token",
