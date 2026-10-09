@@ -49,7 +49,7 @@ jobs:
       - name: Subscription operations on MySQL
         run: |
           set -o pipefail
-          php tests/merchant-operations.php | tee /tmp/operations-result
+          php tests/worker-isolation.php | tee /tmp/operations-result
           grep -q 'checks passed' /tmp/operations-result
   docker:
     runs-on: ubuntu-latest

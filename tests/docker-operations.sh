@@ -22,7 +22,7 @@ printf 'DB_ROOT_PASS=synthetic-test-password\nDB_PASS=synthetic-test-password\nE
 docker run -d --name "$replacement" -v "$volume:/var/lib/epay-keys" -e EPAY_COLLECTION_KEY_FILE=/var/lib/epay-keys/collection.key --entrypoint sh "$image" -c 'touch /var/www/epay/install/install.lock; exec /entrypoint.sh /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >/dev/null
 docker exec "$legacy" cat /tmp/cipher | docker exec -i --user www-data "$replacement" php -r 'define("ROOT","/var/www/epay/"); require ROOT."includes/lib/GatewaySecrets.php"; if(lib\GatewaySecrets::decrypt(stream_get_contents(STDIN),1000)!==["token"=>"synthetic-test-token"])exit(1);'
 docker exec "$replacement" sh -c '[ "$(stat -c %a /var/lib/epay-keys/collection.key)" = 600 ] && [ "$(stat -c %U /var/lib/epay-keys/collection.key)" = www-data ]'
-docker exec "$replacement" sh -c 'i=0; until ps | grep "[e]pay-collection-runner" >/dev/null; do i=$((i+1)); test "$i" -lt 10; sleep 1; done'
+docker exec "$replacement" sh -c 'i=0; until test "$(ps | grep -c "[e]pay-collection-runner")" -ge 2; do i=$((i+1)); test "$i" -lt 10; sleep 1; done'
 docker exec "$replacement" nginx -t
 # Enabling TLS later must restore the original server block on restart.
 docker exec "$replacement" openssl req -x509 -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/epay.key -out /etc/nginx/ssl/epay.pem -days 1 -subj /CN=localhost >/dev/null 2>&1
