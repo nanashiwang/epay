@@ -43,7 +43,7 @@ jobs:
           node --check user/assets/js/bepusdt.js
           node --check user/assets/js/collection.js
           node --check assets/js/subscriptions-admin.js
-          for file in admin/subscriptions.php admin/subscriptions_api.php user/index.php user/merchant_workspace.php user/ajax2.php; do php -l "$file"; done
+          for file in admin/subscriptions.php admin/subscriptions_api.php user/onboarding.php user/index.php user/merchant_workspace.php user/ajax2.php; do php -l "$file"; done
           bash -n epay.sh
           for file in scripts/preserve-collection-key.sh docker/entrypoint.sh docker/collection-runner.sh tests/docker-operations.sh; do sh -n "$file"; done
       - name: Subscription operations on MySQL
@@ -52,6 +52,7 @@ jobs:
           php tests/worker-isolation.php | tee /tmp/operations-result
           grep -q 'checks passed' /tmp/operations-result
           php tests/order-retention.php
+          php tests/merchant-onboarding.php
   docker:
     runs-on: ubuntu-latest
     steps:

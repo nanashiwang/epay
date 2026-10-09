@@ -14,7 +14,7 @@ $view=\lib\MerchantWorkspace::overview($DB,$uid);
 <article class="mw-card"><span>待完成业务通知</span><strong><?=$view['pending']?> 笔</strong><small>包含等待重试及已停止重试的通知</small></article>
 <article class="mw-card"><span>当前套餐</span><strong><?=H::escape($view['group']['name']??'默认套餐')?></strong><small><?=H::escape($view['user']['endtime']??'未开通')?> 到期 · <?=$view['used']?> / <?=$view['policy']['limit']?> 个账号</small></article>
 </section>
-<section class="mw-card"><h2>完成收款配置</h2><ol class="mw-steps">
+<section class="mw-card"><h2>完成收款配置</h2><a href="onboarding.php">查看完整开通指南与验收进度 →</a><ol class="mw-steps">
 <li><b>1. 开通套餐</b><span><?=$view['policy']['active']?'已开通':'未开通或已到期'?></span><a href="groupbuy.php">我的套餐</a></li>
 <li><b>2. 添加并测试账号</b><span><?=$view['used']?'已添加 '.$view['used'].' 个账号':'尚未添加'?></span><a href="<?=!empty($conf['merchant_channels'])?'channels.php':'bepusdt.php'?>">配置支付通道</a></li>
 <li><b>3. 启用并选择默认</b><span><?=$view['types']?'已可使用：'.H::escape(implode('、',array_column($view['types'],'showname'))):'尚无可用支付方式'?></span><a href="/index.php?doc=help&amp;topic=choose">查看配置步骤</a></li>

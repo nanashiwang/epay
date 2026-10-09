@@ -18,6 +18,8 @@ if($workspacePolicy['enabled']) {
     include './merchant_workspace.php'; include './foot.php'; exit;
 }
 
+if(\lib\MerchantOnboarding::firstVisit($DB,$userrow,$conf)) { include './onboarding.php'; exit; }
+
 if(!$conf['reg_input_settle'] && (empty($userrow['account']) || empty($userrow['username']))){
 	exit("<script language='javascript'>window.location.href='./completeinfo.php';</script>");
 }

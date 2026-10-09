@@ -40,3 +40,5 @@ Status: implemented
 提醒执行边界由[进程隔离](../architecture/2026-10-09-worker-isolation.md)扩展：邮件独立进程、每轮配置刷新和完成心跳；原提醒账本不变。
 
 [订单保留](../bug-fix/2026-10-09-order-retention.md)补足历史清理入口，保留订阅与收款审计引用的主订单。
+
+[开通指南](2026-10-09-merchant-onboarding.md)补齐未开通商户入口，沿用权益和通知数据。

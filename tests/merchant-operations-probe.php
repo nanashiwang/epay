@@ -13,6 +13,6 @@ $cdnpublic='/assets/vendor/';$date=date('Y-m-d H:i:s');
 define('VERSION','test');define('TEMPLATE_ROOT',ROOT.'template/');
 if (!function_exists('is_https')) { function is_https(){return true;} }
 $page=$request['page']??'admin-api';
-$files=['admin-api'=>'admin/subscriptions_api.php','plan'=>'user/groupbuy.php','home'=>'user/index.php','stats'=>'user/ajax2.php','orders-api'=>'admin/ajax_order.php'];
+$files=['admin-api'=>'admin/subscriptions_api.php','plan'=>'user/groupbuy.php','home'=>'user/index.php','stats'=>'user/ajax2.php','orders-api'=>'admin/ajax_order.php','onboarding'=>'user/onboarding.php'];
 if (!isset($files[$page])) exit;
 chdir(dirname(ROOT.$files[$page]));require ROOT.$files[$page];

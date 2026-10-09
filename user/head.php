@@ -207,6 +207,7 @@ $conf = array_merge($conf, $groupconfig);
               </li>
 			  <?php }?>
 			  <?php if($conf['group_buy']==1 || \lib\MerchantSubscription::policy(['config'=>json_encode($groupconfig)])['enabled'] || !empty($conf['bepusdt_parent']) || !empty($conf['merchant_channels'])){?>
+			  <li><a href="onboarding.php"><i class="fa fa-compass"></i><span>开通收款指南</span></a></li>
 			  <li class="<?php echo checkIfActive('groupbuy')?>">
                 <a href="groupbuy.php">
                   <i class="glyphicon glyphicon-shopping-cart"></i>
