@@ -44,3 +44,5 @@ Status: implemented
 [开通指南](2026-10-09-merchant-onboarding.md)补齐未开通商户入口，沿用权益和通知数据。
 
 [订阅看板](2026-10-09-subscription-dashboard.md)复用付款与权益记录，并明确余额与外部支付的统计口径。
+
+[支付异常核对](2026-10-09-payment-review.md)补充查单证据和审计，保留原付款确认边界。

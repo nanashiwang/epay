@@ -74,6 +74,16 @@ class BepusdtClient
         return $d;
     }
 
+    /** Checkout evidence is informational; never synthesize a signed payment callback. */
+    public function inspect(array $snapshot)
+    {
+        if (empty($snapshot['provider_id'])) throw new \InvalidArgumentException('缺少网关单号，请在网关后台按本地订单号核对');
+        $response=$this->post('api/v1/pay/info',['trade_id'=>$snapshot['provider_id']]);
+        $d=$response['data']??null;
+        if (($response['status_code']??null)!==200 || !is_array($d) || ($d['trade_id']??null)!==$snapshot['provider_id'] || ($d['order_id']??null)!==$snapshot['trade_no'] || ($d['fiat']??null)!=='CNY' || ($d['trade_type']??null)!==$snapshot['network'] || ($d['token']??null)!==$snapshot['address'] || self::decimal($d['money']??null,2)!==self::decimal($snapshot['money'],2) || self::decimal($d['actual_amount']??null)!==self::decimal($snapshot['coin_amount']) || !in_array($d['status']??null,[1,2,3],true)) throw new \RuntimeException('网关查询证据不完整或与订单不一致');
+        return [1=>'网关报告待付款，请核对付款窗口',2=>'网关报告已付款，请在网关重发原始签名回调',3=>'网关报告已过期，请核对是否存在迟到付款'][$d['status']];
+    }
+
     /** Signed echo verifies credentials without creating a charge or changing an order. */
     public function probe()
     {

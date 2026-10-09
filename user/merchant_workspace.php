@@ -20,6 +20,6 @@ $view=\lib\MerchantWorkspace::overview($DB,$uid);
 <li><b>3. 启用并选择默认</b><span><?=$view['types']?'已可使用：'.H::escape(implode('、',array_column($view['types'],'showname'))):'尚无可用支付方式'?></span><a href="/index.php?doc=help&amp;topic=choose">查看配置步骤</a></li>
 <li><b>4. 接入业务网站</b><span>通道测试后，还需验证业务订单和通知</span><a href="/index.php?doc=help&amp;topic=testing">核对完整流程</a></li>
 </ol></section>
-<div class="mw-grid"><section class="mw-card"><h2>查订单与通知</h2><p>已到账但业务网站未发货时，先查看对应通道的通知记录。</p><div class="mw-toolbar"><a href="order.php">订单记录</a><?php if (!empty($conf['merchant_channels'])) { ?><a href="channels.php">支付通道</a><?php } if (!empty($conf['collection_parent'])) { ?><a href="collection.php">支付宝收款码</a><?php } if (!empty($conf['bepusdt_parent'])) { ?><a href="bepusdt.php">USDT 收款</a><?php } ?></div></section>
+<div class="mw-grid"><section class="mw-card"><h2>查订单与通知</h2><p>已到账但业务网站未发货时，先查看对应通道的通知记录。</p><div class="mw-toolbar"><a href="payment_review.php">支付异常核对</a><a href="order.php">订单记录</a><?php if (!empty($conf['merchant_channels'])) { ?><a href="channels.php">支付通道</a><?php } if (!empty($conf['collection_parent'])) { ?><a href="collection.php">支付宝收款码</a><?php } if (!empty($conf['bepusdt_parent'])) { ?><a href="bepusdt.php">USDT 收款</a><?php } ?></div></section>
 <section class="mw-card"><h2>平台账户余额</h2><p>¥<?=H::escape($userrow['money'])?>，与支付机构收到的款项分别记录。</p><div class="mw-toolbar"><a href="record.php">资金明细</a><a href="userinfo.php?mod=api">API 接入信息</a><a href="/index.php?doc=help">帮助中心</a></div></section></div>
 </main></div></div>
