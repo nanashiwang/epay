@@ -7,14 +7,15 @@ final class BepusdtAccount
     public function __construct($db) { $this->db=$db; }
     public function owned($uid,$id,$lock=false)
     {
-        $r=$this->db->getRow('SELECT A.*,S.name,S.status,S.channel FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id AND S.uid=A.uid WHERE A.uid=:uid AND A.id=:id AND A.deleted_at IS NULL'.($lock?' FOR UPDATE':''),[':uid'=>$uid,':id'=>$id]);
+        $r=$this->db->getRow('SELECT A.*,S.name,S.status,S.channel,T.name trade_type FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id AND S.uid=A.uid JOIN pre_channel C ON C.id=S.channel JOIN pre_type T ON T.id=C.type WHERE A.uid=:uid AND A.id=:id AND A.deleted_at IS NULL'.($lock?' FOR UPDATE':''),[':uid'=>$uid,':id'=>$id]);
         if (!$r) throw new \InvalidArgumentException('收款账号不存在');
         return $r;
     }
     public function audit($uid,$id,$action,$detail='') { $this->db->insert('bepusdt_audit',['uid'=>$uid,'account_id'=>$id,'action'=>$action,'detail'=>$detail,'created_at'=>'NOW()']); }
     public function config(array $r)
     {
-        return ['appurl'=>$r['endpoint'],'appkey'=>GatewaySecrets::decrypt($r['secret'],$r['uid'])['token'],'address'=>$r['address'],'timeout'=>(int)$r['timeout'],'bepusdt_managed'=>1,'account_id'=>(int)$r['id'],'owner_uid'=>(int)$r['uid'],'mode'=>1,'costrate'=>0];
+        $type=$r['trade_type']??$this->db->getColumn('SELECT T.name FROM pre_subchannel S JOIN pre_channel C ON C.id=S.channel JOIN pre_type T ON T.id=C.type WHERE S.id=:id AND S.uid=:uid',[':id'=>$r['id'],':uid'=>$r['uid']]);
+        return ['appurl'=>$r['endpoint'],'appkey'=>GatewaySecrets::decrypt($r['secret'],$r['uid'])['token'],'address'=>$r['address'],'trade_type'=>$type,'timeout'=>(int)$r['timeout'],'bepusdt_managed'=>1,'account_id'=>(int)$r['id'],'owner_uid'=>(int)$r['uid'],'mode'=>1,'costrate'=>0];
     }
     public function save($uid,array $input,$parent)
     {
@@ -22,7 +23,6 @@ final class BepusdtAccount
         GatewayHttp::addresses(parse_url($endpoint,PHP_URL_HOST));
         $id=(int)($input['id']??0); $name=trim((string)($input['name']??'')); $address=trim((string)($input['address']??''));
         if ($name==='' || mb_strlen($name)>30) throw new \InvalidArgumentException('账号名称请填写 1–30 个字');
-        if ($address!=='' && !preg_match('/\AT[1-9A-HJ-NP-Za-km-z]{33}\z/D',$address)) throw new \InvalidArgumentException('请填写正确的 TRON 收款地址，或留空由网关分配');
         $timeout=filter_var($input['timeout']??1200,FILTER_VALIDATE_INT);
         if ($timeout<120 || $timeout>3600) throw new \InvalidArgumentException('付款窗口须为 120–3600 秒');
         return DbTransaction::run($this->db,function() use($uid,$input,$parent,$id,$name,$endpoint,$address,$timeout) {
@@ -30,11 +30,14 @@ final class BepusdtAccount
             if ($policy['self_service']) MerchantChannel::quota($this->db,$uid,false,$id?0:1);
             $old=$id?$this->owned($uid,$id,true):null;
             if ($old && (int)$old['status']!==0) throw new \InvalidArgumentException('请先停用账号再编辑');
+            $tradeType=$input['trade_type']??($old['trade_type']??'usdt.trc20');
+            BepusdtNetwork::address($tradeType,$address);
+            if ($old && ($old['trade_type']!==$tradeType || (int)$old['channel']!==(int)$parent)) throw new \InvalidArgumentException('账号币种与网络不能修改，请新增对应组合的账号');
             $token=trim((string)($input['token']??''));
             if ($token==='' && $old) $token=GatewaySecrets::decrypt($old['secret'],$uid)['token'];
             if (!preg_match('/\A[\x21-\x7e]{8,256}\z/D',$token)) throw new \InvalidArgumentException('请填写 8–256 位 API Token');
-            $p=$this->db->getRow('SELECT C.*,T.status type_status FROM pre_channel C JOIN pre_type T ON T.id=C.type WHERE C.id=:id',[':id'=>$parent]);
-            if (!$p || (int)$p['type_status']!==1 || $p['plugin']!=='bepusdt' || (int)$p['mode']!==1 || (int)$p['status']!==0 || (json_decode($p['config'],true)['bepusdt_managed']??null)!==1) throw new \RuntimeException('BEpusdt 自助收款模板未配置');
+            $p=$this->db->getRow('SELECT C.*,T.name typename,T.status type_status FROM pre_channel C JOIN pre_type T ON T.id=C.type WHERE C.id=:id',[':id'=>$parent]);
+            if (!$p || $p['typename']!==$tradeType || (int)$p['type_status']!==1 || $p['plugin']!=='bepusdt' || (int)$p['mode']!==1 || (int)$p['status']!==0 || (json_decode($p['config'],true)['bepusdt_managed']??null)!==1) throw new \RuntimeException('该币种与网络的 BEpusdt 自助收款模板未配置或已关闭');
             if (!$id) {
                 $count=$this->db->getColumn('SELECT COUNT(*) FROM pre_bepusdt_account WHERE uid=:uid AND deleted_at IS NULL',[':uid'=>$uid]);
                 if ($count>=$policy['limit']) throw new \InvalidArgumentException('已达到套餐账号数量，请归档闲置账号或联系管理员调整套餐');
@@ -49,7 +52,7 @@ final class BepusdtAccount
     }
     public function listing($uid)
     {
-        return $this->db->getAll('SELECT A.id,A.endpoint,A.address,A.timeout,A.verified_at,A.tested_at,A.last_callback,A.last_error,S.name,S.status,R.account_id default_id FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id AND S.uid=A.uid LEFT JOIN pre_bepusdt_route R ON R.account_id=A.id AND R.uid=A.uid WHERE A.uid=:uid AND A.deleted_at IS NULL ORDER BY A.id DESC',[':uid'=>$uid]);
+        return $this->db->getAll('SELECT A.id,A.endpoint,A.address,A.timeout,A.verified_at,A.tested_at,A.last_callback,A.last_error,S.name,S.status,T.name trade_type,R.account_id default_id FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id AND S.uid=A.uid JOIN pre_channel C ON C.id=S.channel JOIN pre_type T ON T.id=C.type LEFT JOIN pre_bepusdt_route R ON R.account_id=A.id AND R.uid=A.uid AND R.type=C.type WHERE A.uid=:uid AND A.deleted_at IS NULL ORDER BY A.id DESC',[':uid'=>$uid]);
     }
     public function verify($uid,$id)
     {
@@ -101,7 +104,7 @@ final class BepusdtAccount
             if ((int)$r['status']!==1 || !$r['verified_at'] || !$r['tested_at'] || $enabled>$policy['limit']) return false;
             if ($policy['self_service']) MerchantChannel::quota($db,$uid,true);
             $p=$db->getRow('SELECT C.*,T.status type_status FROM pre_channel C JOIN pre_type T ON T.id=C.type WHERE C.id=:id',[':id'=>$r['channel']]);
-            if (!$p || (int)$p['type_status']!==1 || $p['plugin']!=='bepusdt' || (int)$p['mode']!==1 || (int)$p['type']!==(int)$type || !empty($p['daystatus']) || $name!=='usdt.trc20' || (int)$p['status']!==0 || (json_decode($p['config'],true)['bepusdt_managed']??null)!==1) return false;
+            if (!$p || (int)$p['type_status']!==1 || $p['plugin']!=='bepusdt' || (int)$p['mode']!==1 || (int)$p['type']!==(int)$type || !empty($p['daystatus']) || !isset(BepusdtNetwork::TYPES[$name]) || $r['trade_type']!==$name || (int)$p['status']!==0 || (json_decode($p['config'],true)['bepusdt_managed']??null)!==1) return false;
             if ($money>0 && ((!empty($p['paymin']) && $money<$p['paymin']) || (!empty($p['paymax']) && $money>$p['paymax']))) return false;
             if (!empty($p['timestart']) || !empty($p['timestop'])) {
                 $hour=(int)date('H');

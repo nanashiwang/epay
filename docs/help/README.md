@@ -19,7 +19,7 @@
 - [配置 QQ 钱包](qqpay.md)
 - [接入你自己的易支付兼容网关](epay_gateway.md)
 - [配置支付宝原生收款码](native_qr.md)
-- [配置 USDT / BEpusdt](bepusdt.md)
+- [配置 USDT / USDC / BEpusdt](bepusdt.md)
 
 ### 接入与验收
 

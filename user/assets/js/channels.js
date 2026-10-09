@@ -41,7 +41,7 @@
   function loadError(e){message(e.message);active=false;$('mc-add').disabled=true;if(!loaded){$('mc-plan').textContent='套餐读取失败，请重试。';$('mc-accounts').replaceChildren(button('重新加载',()=>accounts().catch(loadError)));}}
   async function accounts(){
     const r=await api('list'),plan=r.subscription;active=plan.active;loaded=true;catalog=r.catalog;types=r.types;
-    $('mc-plan').textContent=`${plan.name} · ${active?'使用中':'未开通或已到期'} · 有效期 ${plan.endtime||'未开通'} · 自助账号合计 ${plan.used} / ${plan.limit}。`+(active?'支付宝收款码和 USDT 账号也计入总数。':'可查看历史、停用或归档，请前往“我的套餐”开通或续期。');
+    $('mc-plan').textContent=`${plan.name} · ${active?'使用中':'未开通或已到期'} · 有效期 ${plan.endtime||'未开通'} · 自助账号合计 ${plan.used} / ${plan.limit}。`+(active?'支付宝收款码和 USDT / USDC 账号也计入总数。':'可查看历史、停用或归档，请前往“我的套餐”开通或续期。');
     $('mc-add').disabled=!active||plan.used>=plan.limit;$('mc-add').title=plan.used>=plan.limit?'账号总数已满，请归档闲置账号':'';$('mc-accounts').replaceChildren();
     if(!r.data.length)$('mc-accounts').append(node('p',active?'还没有通道。添加自己的支付宝、微信、QQ 或易支付账号，完成测试后即可收款。':'还没有通道。开通商户自助套餐后，即可配置自己的支付账号。','collection-empty'));
     for(const a of r.data){

@@ -12,7 +12,7 @@
 | 支付通道：QQ 钱包 | 扫码 / H5 | 商户号、API 密钥 |
 | 支付通道：易支付兼容网关 | 跳转网关收银台；支付宝、微信、QQ、银行、京东 | 公网 HTTPS 地址、商户 ID、密钥；按支付类型分别配置 |
 | 支付宝收款码 | 原生码与账单匹配 | 见 [原生码配置](MERCHANT_COLLECTION.md) |
-| USDT / BEpusdt | CNY 订单、USDT / TRC20 | 商户自己的网关地址与 Token，见 [BEpusdt 配置](BEPUSDT_SUBSCRIPTION.md) |
+| USDT / USDC / BEpusdt | CNY 订单、12 个币种/网络组合 | 商户自己的网关地址与 Token，见 [BEpusdt 配置](BEPUSDT_SUBSCRIPTION.md) |
 
 这里的官方接口需要商户自行完成对应产品签约。微信 V3 密钥加密保存在数据库，调用时在内存中加载，不依赖管理员上传共享文件。服务商进件、JSAPI/小程序共享绑定、证书文件模式及其他历史插件尚未开放；API 客户端使用 `web` 或 `jump` 收款方式。退款由商户在自己的支付机构后台处理，不开放通用转账或自动退款。
 
@@ -39,7 +39,7 @@ php scripts/merchant-operations-setup.php --apply
 
 1. 进入“支付通道”，新增接入方式和自己的配置。密钥保存后不回显，编辑时留空保留。
 2. 创建 0.01–100 元测试订单，由商户打开收银台并主动付款；收到有效支付回调才标记测试通过。保存成功本身不代表能够收款。
-3. 启用并设为该支付方式的默认账号。支付宝原生码与通用支付宝账号互斥默认；微信、QQ、USDT 等各自独立。
+3. 启用并设为该支付方式的默认账号。支付宝原生码与通用支付宝账号互斥默认；微信、QQ 和每个稳定币/网络组合各自独立。
 4. 在“支付订单”“通知记录”“操作记录”核对收款与业务通知。配置变化会清除测试状态，需要停用后修改并重新验收；归档保留历史记录。
 
 通用套餐中的支付宝、微信、QQ、易支付、原生码及 BEpusdt 共享账号上限，未归档的停用账号仍占名额。降级导致启用数超额时暂停新直收订单，需停用多余账号；新增账号需先归档闲置配置。
@@ -57,7 +57,7 @@ php scripts/merchant-operations-setup.php --apply
 ## 验证记录
 
 - `tests/merchant-channels.php`：隔离 MySQL 8.0，106 项检查，覆盖迁移幂等、租户/CSRF、密钥用途隔离、真实支付 API 与收银台入口、零费、共享限额、到期/降级、并发及历史回调、签名/金额/身份、平台权益隔离和审计失败回滚。
-- `tests/bepusdt-subscription.php` 136 项、`tests/merchant-collection.php` 73 项、`tests/alipay-native-qr.php` 80 项回归通过。CI 为 PHP 8.3/MySQL 8.0；本地隔离容器为 PHP 8.5。
+- `tests/bepusdt-subscription.php` 346 项、`tests/merchant-collection.php` 73 项、`tests/alipay-native-qr.php` 80 项回归通过。CI 为 PHP 8.3/MySQL 8.0；本地隔离容器为 PHP 8.5。
 - 本地真实页面配合模拟账号验收新增、校验失败、编辑密钥留空、刷新、普通商户隔离、到期、API 失败重试、桌面、390px 窄屏与深色媒体样式（fixture 强制加载），并检查套餐和原生码相邻入口。
 
 协议桩、合成签名和页面验收不代表实际支付机构账户可用。本轮未使用生产凭据、部署生产、执行生产迁移或发起真实付款。上线后需要商户自行完成小额付款、支付机构到账、Epay 订单和业务站通知的完整核验。

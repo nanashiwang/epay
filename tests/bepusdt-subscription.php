@@ -35,7 +35,7 @@ class FakeClient extends Client {
  protected function post($path,array $params,$decode=true) {
   self::$calls++;if(self::$fail)throw new RuntimeException('synthetic transport failure');
   check(is_float($params['amount'])&&Client::verify($params,'synthetic-token'),'wire number and signature');
-  $data=['order_id'=>$params['order_id'],'trade_id'=>'be-'.$params['order_id'],'fiat'=>'CNY','trade_type'=>'usdt.trc20','amount'=>$params['amount'],'status'=>1,'token'=>'T'.str_repeat('A',33),'actual_amount'=>'0.14','expiration_time'=>1200,'payment_url'=>'https://8.8.8.8/pay/'.$params['order_id']];
+  $data=['order_id'=>$params['order_id'],'trade_id'=>'be-'.$params['order_id'],'fiat'=>'CNY','trade_type'=>$params['trade_type'],'amount'=>$params['amount'],'status'=>1,'token'=>$params['address']?:'T'.str_repeat('A',33),'actual_amount'=>'0.14','expiration_time'=>1200,'payment_url'=>'https://8.8.8.8/pay/'.$params['order_id']];
   if(self::$mutate)$data=(self::$mutate)($data);return ['status_code'=>200,'data'=>$data];
  }
 }
@@ -85,4 +85,5 @@ $DB->update('type',['status'=>0],['id'=>$type]);reject(fn()=>$gateway->create($l
 $archive=makeOrder($id);$gateway->create($archive,$channel);$svc->action(1000,$id,'disable');$svc->action(1000,$id,'unroute');$svc->action(1000,$id,'archive');$gateway->notify($archive['trade_no'],receipt($archive));check($DB->findColumn('order','status',['trade_no'=>$archive['trade_no']])==1,'archived account receives old callback');
 result(spawn(['setup'=>true]));$configured=$DB->getColumn("SELECT v FROM pre_config WHERE k='bepusdt_parent'");$template=$DB->find('channel','*',['id'=>$configured]);check($template['plugin']==='bepusdt'&&$template['status']==0&&$template['mode']==1,'CLI migration creates disabled direct template');
 $count=$DB->getColumn('SELECT COUNT(*) FROM pre_channel');result(spawn(['setup'=>true]));check($DB->getColumn('SELECT COUNT(*) FROM pre_channel')==$count,'CLI migration idempotent');
+require __DIR__.'/bepusdt-multichain.php';
 echo "BEpusdt subscription: $checks checks passed\n";

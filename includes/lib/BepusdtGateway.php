@@ -45,8 +45,9 @@ class BepusdtGateway
                 if ((int)$channel['mode']!==1 || BepusdtClient::decimal($order['money'],2)!==BepusdtClient::decimal($order['realmoney'],2) || BepusdtClient::decimal($order['money'],2)!==BepusdtClient::decimal($order['getmoney'],2)) throw new \RuntimeException('包月直收订单金额不一致');
             }
             if (!empty($order['cert_info']) || !empty($order['profits'])) throw new \InvalidArgumentException('BEpusdt 暂不支持付款人认证或分账订单');
-            if ($account && $order['typename']!=='usdt.trc20') throw new \InvalidArgumentException('当前仅开放 USDT / TRC20');
+            if ($account && (!isset(BepusdtNetwork::TYPES[$order['typename']]) || $channel['trade_type']!==$order['typename'])) throw new \InvalidArgumentException('订单币种与网络和收款账号不一致');
             $config=['appurl'=>GatewayHttp::endpoint($channel['appurl']),'appkey'=>$channel['appkey'],'address'=>trim($channel['address']??''),'timeout'=>(int)(($channel['timeout']??0)?:1200),'mode'=>(int)$channel['mode']];
+            if ($account) BepusdtNetwork::address($order['typename'],$config['address']);
             if ($config['timeout']<120 || $config['timeout']>3600) throw new \InvalidArgumentException('网关订单超时须为 120–3600 秒');
             $params=['order_id'=>$trade,'amount'=>$order['realmoney'],'fiat'=>'CNY','trade_type'=>$order['typename'],'name'=>$order['name'],'address'=>$config['address'],'timeout'=>$config['timeout'],'notify_url'=>$conf['localurl'].'pay/notify/'.$trade.'/','redirect_url'=>$siteurl.'pay/return/'.$trade.'/'];
             if (!empty($channel['rate']) && !$account) $params['rate']=(string)$channel['rate'];
@@ -74,6 +75,8 @@ class BepusdtGateway
             $o=$this->db->getRow('SELECT * FROM pre_order WHERE trade_no=:trade FOR UPDATE',[':trade'=>$trade]);
             if (!$o || (int)$o['uid']!==(int)$r['uid'] || ($data['order_id']??null)!==$trade || ($data['trade_id']??null)!==$r['provider_id'] || !$r['provider_id']) throw new \InvalidArgumentException('order mismatch');
             if (BepusdtClient::decimal($data['amount']??null,2)!==BepusdtClient::decimal($r['money'],2) || BepusdtClient::decimal($o['realmoney'],2)!==BepusdtClient::decimal($r['money'],2) || ($data['token']??null)!==$r['address'] || BepusdtClient::decimal($data['actual_amount']??null)!==BepusdtClient::decimal($r['coin_amount'])) throw new \InvalidArgumentException('payment mismatch');
+            // v1.24.2 notifications omit trade_type; if supplied, it must match the snapshot.
+            if (isset($data['trade_type']) && $data['trade_type']!==$r['network']) throw new \InvalidArgumentException('payment network mismatch');
             $status=$data['status']??null;
             if (!in_array($status,[1,2,3],true)) throw new \InvalidArgumentException('invalid state');
             if ($r['state']==='paid') {
@@ -98,7 +101,7 @@ class BepusdtGateway
                 if ($account) {
                     $update=['last_callback'=>'NOW()','last_error'=>null];
                     $current=(new BepusdtAccount($this->db))->config($account);
-                    if ((int)$o['tid']===3 && $config['appurl']===$current['appurl'] && $config['address']===$current['address'] && hash_equals($config['appkey'],$current['appkey'])) $update['tested_at']='NOW()';
+                    if ((int)$o['tid']===3 && $r['network']===$current['trade_type'] && $config['appurl']===$current['appurl'] && $config['address']===$current['address'] && hash_equals($config['appkey'],$current['appkey'])) $update['tested_at']='NOW()';
                     $this->db->update('bepusdt_account',$update,['id'=>$r['account_id']]);
                 }
             } else {

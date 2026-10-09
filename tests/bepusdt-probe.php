@@ -1,6 +1,7 @@
 <?php
 require __DIR__.'/bepusdt-bootstrap.php';
 $request=json_decode(stream_get_contents(STDIN),true);
+if (!empty($request['multichain'])) foreach (['bepusdt_parent','bepusdt_parents'] as $key) $conf[$key]=$DB->findColumn('config','v',['k'=>$key]);
 if (isset($request['setup'])) { $argv=['bepusdt-setup.php','--apply']; require ROOT.'scripts/bepusdt-setup.php'; exit; }
 if (isset($request['settle'])) {
     try { \lib\MerchantSubscription::settle($DB,$request['settle'],'synthetic-paid');echo '1'; }
@@ -13,7 +14,7 @@ if (isset($request['notify'])) {
 if (isset($request['pay_api'])) {
     $conf['payfee_lessthan']=10; $conf['payfee_mincost']=5;
     $conf['pay_payaddstart']=0.5; $conf['pay_payaddmin']=0.01; $conf['pay_payaddmax']=0.09;
-    $_POST=['pid'=>'1000','type'=>'usdt.trc20','out_trade_no'=>$request['pay_api'],'notify_url'=>'https://example.invalid/notify','return_url'=>'https://example.invalid/return','name'=>'API 测试','money'=>'1.00','clientip'=>'8.8.8.8','method'=>'jump','device'=>'pc'];
+    $_POST=['pid'=>'1000','type'=>$request['trade_type']??'usdt.trc20','out_trade_no'=>$request['pay_api'],'notify_url'=>'https://example.invalid/notify','return_url'=>'https://example.invalid/return','name'=>'API 测试','money'=>'1.00','clientip'=>'8.8.8.8','method'=>'jump','device'=>'pc'];
     $_POST['sign']=\lib\Payment::makeSign($_POST,'synthetic-key'); $_POST['sign_type']='MD5';
     \lib\api\Pay::create(); exit;
 }

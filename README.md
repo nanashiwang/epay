@@ -163,18 +163,18 @@ docker-compose.yml
 
 ## 用户帮助中心
 
-用户中心点击“帮助中心”，或访问本站 `/index.php?doc=help`，可按分类阅读、搜索操作步骤。支付通道、支付宝收款码、USDT 收款和套餐页面也提供对应教程入口，未登录用户同样可以阅读。
+用户中心点击“帮助中心”，或访问本站 `/index.php?doc=help`，可按分类阅读、搜索操作步骤。支付通道、支付宝收款码、USDT / USDC 收款和套餐页面也提供对应教程入口，未登录用户同样可以阅读。
 
 仓库内可从[帮助目录](docs/help/README.md)或[第一次使用](docs/help/start.md)开始。22 篇本地教程覆盖套餐、支付宝与微信配置、密钥、BEpusdt、网站接入、通知验签、退款和排障；另有[支付FM的 97 篇来源索引](docs/help/sources.md)。教程按本项目实际功能编写，原站专属的收费、软件和接口已标注适用范围，不直接作为本站操作流程。
 
 ## BEpusdt 商户包月接入
 
-商户可在用户中心自行配置 BEpusdt，按套餐开通 USDT / TRC20 直收。请先阅读[配置、迁移与验收说明](docs/BEPUSDT_SUBSCRIPTION.md)；升级代码不会自动开通套餐或迁移数据库。上游基线见[外部上游追踪](docs/UPSTREAMS.md)。
+商户可在用户中心自行配置 BEpusdt，按套餐开通 USDT / USDC 多网络直收。请先阅读[配置、迁移与验收说明](docs/BEPUSDT_SUBSCRIPTION.md)；升级代码不会自动开通套餐或迁移数据库。上游基线见[外部上游追踪](docs/UPSTREAMS.md)。
 
 ## 推荐插件
 
-推荐使用 **Bepusdt** 插件进行 USDT（TRC20）收款。  
-Bepusdt 是适用于彩虹易支付系统的 USDT 收款插件，收到的货币直接转入商户钱包，不经过任何第三方。
+推荐使用 **Bepusdt** 插件进行 USDT / USDC 多网络收款。
+Bepusdt 是适用于彩虹易支付系统的稳定币收款插件，收到的货币直接转入商户钱包，不经过任何第三方。
 
 **插件开源地址**：  
 🔗 [https://github.com/v03413/bepusdt](https://github.com/v03413/bepusdt)

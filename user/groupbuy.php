@@ -123,7 +123,7 @@ foreach($list as $res){
 		$visible = explode(',',$res['visible']);
 		if(!in_array($userrow['gid'], $visible))continue;
 	}
-	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.(\lib\MerchantSubscription::policy($res)['self_service']?'支付宝 / 微信 / QQ / 易支付 / USDT（以开放的支付方式及已签约产品为准）':display_info($res['info'])).(\lib\MerchantSubscription::policy($res)['enabled']?'<p class="text-success">'.(\lib\MerchantSubscription::policy($res)['self_service']?'商户自配支付通道':'USDT / TRC20 自助直收').' · 零订单服务费 · 最多 '.\lib\MerchantSubscription::policy($res)['limit'].' 个账号</p>':'').'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
+	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.(\lib\MerchantSubscription::policy($res)['self_service']?'支付宝 / 微信 / QQ / 易支付 / USDT / USDC（以开放的支付方式及已签约产品为准）':display_info($res['info'])).(\lib\MerchantSubscription::policy($res)['enabled']?'<p class="text-success">'.(\lib\MerchantSubscription::policy($res)['self_service']?'商户自配支付通道':'USDT / USDC 多网络直收').' · 零订单服务费 · 最多 '.\lib\MerchantSubscription::policy($res)['limit'].' 个账号</p>':'').'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
 }
 ?>
 		  </tbody>

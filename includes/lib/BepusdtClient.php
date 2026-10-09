@@ -63,8 +63,9 @@ class BepusdtClient
         if (($response['status_code']??null)!==200 || !is_array($response['data']??null)) throw new \RuntimeException('网关未确认创建结果，请登录网关核对订单');
         $d=$response['data'];
         if (($d['order_id']??null)!==$params['order_id'] || ($d['fiat']??null)!=='CNY' || !is_string($d['trade_id']??null) || !preg_match('/\A[a-zA-Z0-9_-]{1,64}\z/D',$d['trade_id']) || self::decimal($d['amount']??null,2)!==$amount || ($d['status']??null)!==1) throw new \RuntimeException('网关订单与请求不一致，请核对订单');
-        if (isset($d['trade_type']) && $d['trade_type']!==$params['trade_type']) throw new \RuntimeException('网关支付网络不一致');
+        if (($d['trade_type']??null)!==$params['trade_type']) throw new \RuntimeException('网关未确认一致的币种与网络，请使用兼容 BEpusdt v1.24.2 的接口');
         if (!is_string($d['token']??null) || !preg_match('/\A[a-zA-Z0-9:_-]{20,128}\z/D',$d['token']) || (!empty($params['address']) && $params['address']!==$d['token'])) throw new \RuntimeException('网关收款地址不一致');
+        if (isset(BepusdtNetwork::TYPES[$params['trade_type']])) BepusdtNetwork::address($params['trade_type'],$d['token']);
         $d['actual_amount']=self::decimal($d['actual_amount']??null);
         if ($d['actual_amount']==='0') throw new \RuntimeException('网关币额不正确');
         $seconds=$d['expiration_time']??null;

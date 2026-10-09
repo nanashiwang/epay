@@ -17,9 +17,12 @@ try {
     switch ($act) {
         case 'list':
             [$u,$g,$policy]=\lib\MerchantSubscription::current($DB,$uid);
-            bepusdt_reply(['code'=>0,'data'=>$svc->listing($uid),'subscription'=>['name'=>$g['name']??'默认套餐','endtime'=>$u['endtime'],'active'=>$policy['active'],'limit'=>$policy['limit'],'self_service'=>$policy['self_service'],'used'=>$policy['self_service']?\lib\MerchantChannel::count($DB,$uid):count($svc->listing($uid))]]);
+            bepusdt_reply(['code'=>0,'data'=>$svc->listing($uid),'networks'=>\lib\BepusdtNetwork::available($DB,$conf),'subscription'=>['name'=>$g['name']??'默认套餐','endtime'=>$u['endtime'],'active'=>$policy['active'],'limit'=>$policy['limit'],'self_service'=>$policy['self_service'],'used'=>$policy['self_service']?\lib\MerchantChannel::count($DB,$uid):count($svc->listing($uid))]]);
         case 'save':
-            $id=$svc->save($uid,$_POST,(int)$conf['bepusdt_parent']);
+            $tradeType=$_POST['trade_type']??'usdt.trc20';
+            $parents=\lib\BepusdtNetwork::parents($conf);
+            if (empty($parents[$tradeType])) throw new InvalidArgumentException('该币种与网络尚未开通，请联系管理员更新收款模板');
+            $id=$svc->save($uid,$_POST,(int)$parents[$tradeType]);
             bepusdt_reply(['code'=>0,'id'=>$id,'msg'=>'配置已保存，请校验接口并测试到账']);
         case 'verify':
             $svc->verify($uid,$id); bepusdt_reply(['code'=>0,'msg'=>'接口签名校验通过；请继续测试收款与到账回调']);
@@ -37,7 +40,7 @@ try {
                 if ($old) return $old['trade_no'];
                 $trade=date('YmdHis').random_int(10000,99999); $url=$siteurl.'user/bepusdt.php?paid='.$trade;
                 $type=$DB->findColumn('channel','type',['id'=>$r['channel']]);
-                $DB->insert('order',['trade_no'=>$trade,'out_trade_no'=>'bepusdt-test-'.$trade,'uid'=>$uid,'tid'=>3,'type'=>$type,'channel'=>$r['channel'],'subchannel'=>$id,'name'=>'USDT 收款测试','money'=>$amount,'realmoney'=>$amount,'getmoney'=>$amount,'addtime'=>'NOW()','status'=>0,'notify_url'=>$url,'return_url'=>$url,'domain'=>$_SERVER['HTTP_HOST'],'ip'=>$clientip,'param'=>json_encode(['bepusdt_test'=>1])]);
+                $DB->insert('order',['trade_no'=>$trade,'out_trade_no'=>'bepusdt-test-'.$trade,'uid'=>$uid,'tid'=>3,'type'=>$type,'channel'=>$r['channel'],'subchannel'=>$id,'name'=>\lib\BepusdtNetwork::label($r['trade_type']).' 收款测试','money'=>$amount,'realmoney'=>$amount,'getmoney'=>$amount,'addtime'=>'NOW()','status'=>0,'notify_url'=>$url,'return_url'=>$url,'domain'=>$_SERVER['HTTP_HOST'],'ip'=>$clientip,'param'=>json_encode(['bepusdt_test'=>1])]);
                 $svc->audit($uid,$id,'创建测试订单',$trade); return $trade;
             });
             bepusdt_reply(['code'=>0,'url'=>'/pay/submit/'.$trade.'/']);
