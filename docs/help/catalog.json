@@ -1,0 +1,300 @@
+{
+  "reviewed_at": "2026-10-09",
+  "categories": [
+    "开始使用",
+    "支付配置",
+    "接入与验收",
+    "订单与排障",
+    "管理员",
+    "参考资料"
+  ],
+  "articles": [
+    {
+      "id": "start",
+      "category": "开始使用",
+      "title": "第一次使用：从开通到收到第一笔款",
+      "summary": "按顺序完成套餐、通道配置、业务接入与验收。",
+      "keywords": [
+        "新手",
+        "开通",
+        "入门",
+        "配置"
+      ]
+    },
+    {
+      "id": "plans",
+      "category": "开始使用",
+      "title": "套餐购买、续期与账号数量",
+      "summary": "了解自然月续期、共享账号名额及到期处理。",
+      "keywords": [
+        "价格",
+        "包月",
+        "到期",
+        "续费",
+        "限额"
+      ]
+    },
+    {
+      "id": "choose",
+      "category": "开始使用",
+      "title": "选择适合自己的支付方式",
+      "summary": "对照已有账户、产品与顾客使用场景选择入口。",
+      "keywords": [
+        "支付宝",
+        "微信",
+        "Native",
+        "H5",
+        "JSAPI"
+      ]
+    },
+    {
+      "id": "alipay",
+      "category": "支付配置",
+      "title": "配置支付宝官方支付",
+      "summary": "填写 APPID、卖家 UID 和 RSA2 参数，测试后启用。",
+      "keywords": [
+        "支付宝",
+        "当面付",
+        "手机网站",
+        "电脑网站"
+      ]
+    },
+    {
+      "id": "alipay_keys",
+      "category": "支付配置",
+      "title": "分清支付宝公钥、应用公钥与私钥",
+      "summary": "逐项核对密钥来源、去向及轮换步骤。",
+      "keywords": [
+        "支付宝",
+        "RSA2",
+        "公钥",
+        "私钥",
+        "签名"
+      ]
+    },
+    {
+      "id": "wechat_v3",
+      "category": "支付配置",
+      "title": "配置微信支付 V3",
+      "summary": "准备 APIv3 密钥、公钥 ID、证书序列号和 PEM。",
+      "keywords": [
+        "微信",
+        "微信支付公钥",
+        "证书",
+        "V3",
+        "Native",
+        "H5"
+      ]
+    },
+    {
+      "id": "wechat_v2",
+      "category": "支付配置",
+      "title": "配置微信支付 V2",
+      "summary": "为已有 APIv2 权限的商户配置扫码与 H5。",
+      "keywords": [
+        "微信",
+        "APIv2",
+        "V2",
+        "密钥"
+      ]
+    },
+    {
+      "id": "qqpay",
+      "category": "支付配置",
+      "title": "配置 QQ 钱包",
+      "summary": "使用自己的 QQ 商户号和 API 密钥收款。",
+      "keywords": [
+        "QQ",
+        "财付通",
+        "扫码"
+      ]
+    },
+    {
+      "id": "epay_gateway",
+      "category": "支付配置",
+      "title": "接入你自己的易支付兼容网关",
+      "summary": "分清上游网关配置与业务网站接入的方向。",
+      "keywords": [
+        "易支付",
+        "网关",
+        "上游",
+        "银行卡",
+        "京东"
+      ]
+    },
+    {
+      "id": "native_qr",
+      "category": "支付配置",
+      "title": "配置支付宝原生收款码",
+      "summary": "校验账单接口、启用监测并核对准确金额。",
+      "keywords": [
+        "支付宝",
+        "原生码",
+        "免挂",
+        "监测",
+        "在线",
+        "同额"
+      ]
+    },
+    {
+      "id": "bepusdt",
+      "category": "支付配置",
+      "title": "配置 USDT / BEpusdt",
+      "summary": "自行管理网关、Token、网络与精确币额。",
+      "keywords": [
+        "USDT",
+        "TRC20",
+        "虚拟币",
+        "链上",
+        "Token",
+        "BEpusdt"
+      ]
+    },
+    {
+      "id": "integration",
+      "category": "接入与验收",
+      "title": "将业务网站或现成插件接到本站",
+      "summary": "按本站协议配置易支付插件和 API 凭据。",
+      "keywords": [
+        "WordPress",
+        "Discuz",
+        "发卡",
+        "插件",
+        "API",
+        "接口"
+      ]
+    },
+    {
+      "id": "callbacks",
+      "category": "接入与验收",
+      "title": "支付通知、验签与业务发货",
+      "summary": "区分机构回调与业务通知，正确验签并幂等处理。",
+      "keywords": [
+        "notify_url",
+        "return_url",
+        "success",
+        "回调",
+        "通知",
+        "签名"
+      ]
+    },
+    {
+      "id": "testing",
+      "category": "接入与验收",
+      "title": "配置完成后如何验收",
+      "summary": "从支付机构、本站和业务网站核对同一笔订单。",
+      "keywords": [
+        "测试",
+        "小额",
+        "付款",
+        "成功"
+      ]
+    },
+    {
+      "id": "orders",
+      "category": "订单与排障",
+      "title": "订单、流水与通知记录怎么看",
+      "summary": "使用订单标识、流水和审计记录定位问题。",
+      "keywords": [
+        "订单",
+        "交易号",
+        "通知",
+        "操作记录",
+        "归档"
+      ]
+    },
+    {
+      "id": "troubleshooting",
+      "category": "订单与排障",
+      "title": "收款故障排查",
+      "summary": "定位无可用通道、配置错误、未确认和通知失败。",
+      "keywords": [
+        "错误",
+        "失败",
+        "离线",
+        "超时",
+        "没到账",
+        "发货"
+      ]
+    },
+    {
+      "id": "security",
+      "category": "订单与排障",
+      "title": "密钥管理与账号维护",
+      "summary": "保存、轮换、归档和疑似泄露时的处理顺序。",
+      "keywords": [
+        "安全",
+        "加密",
+        "密钥",
+        "不回显",
+        "泄露"
+      ]
+    },
+    {
+      "id": "refunds",
+      "category": "订单与排障",
+      "title": "退款、金额异常与投诉处理",
+      "summary": "核对实际支付凭证，在机构后台处理退款。",
+      "keywords": [
+        "退款",
+        "投诉",
+        "少付",
+        "多付",
+        "补单"
+      ]
+    },
+    {
+      "id": "admin_plans",
+      "category": "管理员",
+      "title": "管理员：创建包月套餐",
+      "summary": "分别设置用户组权益、售价、周期及上架范围。",
+      "keywords": [
+        "管理员",
+        "套餐",
+        "用户组",
+        "定价",
+        "上架"
+      ]
+    },
+    {
+      "id": "admin_setup",
+      "category": "管理员",
+      "title": "管理员：启用功能与运行检查",
+      "summary": "理解迁移、主密钥、worker 和上线验收顺序。",
+      "keywords": [
+        "部署",
+        "初始化",
+        "迁移",
+        "运维",
+        "worker",
+        "回滚"
+      ]
+    },
+    {
+      "id": "limitations",
+      "category": "参考资料",
+      "title": "原站教程与本站功能有哪些区别",
+      "summary": "核对收费、轮询、软件和接口的适用范围。",
+      "keywords": [
+        "兼容",
+        "区别",
+        "未支持",
+        "功能",
+        "原站"
+      ]
+    },
+    {
+      "id": "sources",
+      "category": "参考资料",
+      "title": "支付FM文档来源索引",
+      "summary": "查看已获取的 97 篇公开页面和对应本地指南。",
+      "keywords": [
+        "来源",
+        "支付FM",
+        "原文",
+        "下载",
+        "参考"
+      ]
+    }
+  ]
+}

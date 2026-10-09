@@ -90,6 +90,7 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
 			<i class="fa fa-shopping-cart"></i>&nbsp;购买会员
 		</div>
 		<div class="panel-body">
+        <p><a href="/index.php?doc=help&amp;topic=plans">查看套餐购买、续期与账号数量说明 →</a></p>
 		<div class="list-group-item">
 		  <b>当前会员等级：<font color="#f35a1f"><?php echo $mygroupname?></b></font>
 		</div>

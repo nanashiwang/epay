@@ -9,6 +9,7 @@ $title='支付通道'; include './head.php';
 <div id="content" class="app-content" role="main"><div class="app-content-body"><main class="collection" id="merchant-channels" data-csrf="<?=htmlspecialchars($_SESSION['channels_csrf'],ENT_QUOTES,'UTF-8')?>">
 <header class="collection-header"><div><div class="collection-eyebrow">我的收款配置</div><h1>支付通道</h1><p>使用自己的支付账号收款，由你管理密钥和默认通道。</p></div><button class="btn btn-primary" id="mc-add" disabled>＋ 添加支付通道</button></header>
 <nav class="collection-tabs" aria-label="收款方式"><a class="btn btn-primary" href="channels.php" aria-current="page">支付通道</a><?php if(!empty($conf['collection_parent'])){?><a class="btn btn-default" href="collection.php">支付宝收款码</a><?php } if(!empty($conf['bepusdt_parent'])){?><a class="btn btn-default" href="bepusdt.php">USDT / BEpusdt</a><?php } ?><a class="btn btn-default" href="groupbuy.php">我的套餐</a></nav>
+<p class="collection-help"><a href="/index.php?doc=help&amp;topic=choose">查看配置教程与常见问题 →</a></p>
 <div id="mc-plan" class="collection-notice">正在读取套餐…</div>
 <div class="collection-notice">包月套餐收取软件使用费，不收按笔平台服务费；支付机构自己的费率仍按你的签约执行。保存配置 → 测试到账 → 启用 → 设为默认。每种支付方式可选择一个默认账号，未配置的方式不会使用平台收款账户。</div>
 <div id="mc-message" role="status" aria-live="polite" hidden></div>

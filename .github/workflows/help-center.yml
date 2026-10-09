@@ -1,0 +1,33 @@
+name: Help Center
+on:
+  push:
+    branches: [main]
+    paths: ['docs/help/**', 'assets/help/**', 'assets/doc/js/docView.js', 'includes/lib/HelpCenter.php', 'template/default/doc/**', 'user/**', 'tests/help-center.php', 'scripts/check-help-sources.py', '.github/workflows/help-center.yml']
+  pull_request:
+    paths: ['docs/help/**', 'assets/help/**', 'assets/doc/js/docView.js', 'includes/lib/HelpCenter.php', 'template/default/doc/**', 'user/**', 'tests/help-center.php', 'scripts/check-help-sources.py', '.github/workflows/help-center.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring
+          coverage: none
+      - name: Verify guides, source coverage and safe rendering
+        run: php tests/help-center.php
+      - name: Syntax checks
+        run: |
+          set -o pipefail
+          php -l includes/lib/HelpCenter.php
+          find template/default/doc -name '*.php' -print0 | xargs -0 -n1 php -l
+          for file in user/head.php user/channels.php user/collection.php user/bepusdt.php user/groupbuy.php; do php -l "$file"; done
+          node --check assets/help/help.js
+          node --check assets/doc/js/docView.js
+          python3 -m py_compile scripts/check-help-sources.py

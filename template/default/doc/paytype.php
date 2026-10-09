@@ -33,7 +33,7 @@ $paytype = $DB->getAll("SELECT * FROM pre_type WHERE status=1 ORDER BY id ASC");
             <ul class="layui-nav" lay-filter="">
                 <div class="navRight">
                     <li class="layui-nav-item layui-this" lay-unselect>
-                        <a href="/" style="padding-right: 40px;">返回官网</a>
+                        <a href="/index.php?doc=help" style="display:inline-block;padding-right:20px;">帮助中心</a><a href="/" style="padding-right: 40px;">返回官网</a>
                     </li>
                 </div>
             </ul>

@@ -1,0 +1,978 @@
+{
+  "source": "https://docs.zhifux.com/read/zhifufm/index",
+  "checked_at": "2026-10-09T12:34:06.232357+00:00",
+  "count": 97,
+  "distribution": "Source text reviewed locally; published content is original project guidance and reference metadata. No full-text mirror or media redistribution.",
+  "pages": [
+    {
+      "slug": "index",
+      "title": "对接必读",
+      "url": "https://docs.zhifux.com/read/zhifufm/index",
+      "http_status": 200,
+      "chars": 4704,
+      "sha256": "d3aa33480fb5f5559a7baf557a8a1180d5a6f6d2e0858a6314de46ba05ca93fa",
+      "scope": "adapted",
+      "guide": "start"
+    },
+    {
+      "slug": "paytype",
+      "title": "支付产品介绍",
+      "url": "https://docs.zhifux.com/read/zhifufm/paytype",
+      "http_status": 200,
+      "chars": 5257,
+      "sha256": "92a7ab06336b2f9a5bae6388219e8770dde06ca11e89248cbb82ce36068441a7",
+      "scope": "adapted",
+      "guide": "choose"
+    },
+    {
+      "slug": "fee",
+      "title": "收费说明",
+      "url": "https://docs.zhifux.com/read/zhifufm/fee",
+      "http_status": 200,
+      "chars": 2749,
+      "sha256": "e28b09074858ad7d682bcfc7dafb9c01266518fa7dc55bab95a52e408c6ad6d1",
+      "scope": "adapted",
+      "guide": "plans"
+    },
+    {
+      "slug": "userarticle",
+      "title": "用户投稿",
+      "url": "https://docs.zhifux.com/read/zhifufm/userarticle",
+      "http_status": 200,
+      "chars": 1028,
+      "sha256": "dfc23202afebf42a1c4a11f28f66f0be2b3b0e7551e200eb3cec92b7b1c780a1",
+      "scope": "adapted",
+      "guide": "plans"
+    },
+    {
+      "slug": "qa",
+      "title": "新用户问答",
+      "url": "https://docs.zhifux.com/read/zhifufm/qa",
+      "http_status": 200,
+      "chars": 3515,
+      "sha256": "0ed1627ab889e685ba97734248a5049fff13779fc46e588c732f704c48bfe382",
+      "scope": "adapted",
+      "guide": "choose"
+    },
+    {
+      "slug": "step",
+      "title": "接入指引",
+      "url": "https://docs.zhifux.com/read/zhifufm/step",
+      "http_status": 200,
+      "chars": 1828,
+      "sha256": "e9407ce7a659047d048ac67ef26c3364ec5c6e33b46ba907ae6008b5e55600f1",
+      "scope": "adapted",
+      "guide": "start"
+    },
+    {
+      "slug": "personstep",
+      "title": "免签类型",
+      "url": "https://docs.zhifux.com/read/zhifufm/personstep",
+      "http_status": 200,
+      "chars": 2433,
+      "sha256": "99b4c289f7c93d255a29bed3d792c26eaad709dd1a295cd18df6983305ce9d70",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "robotapp",
+      "title": "第1步：方式1收款通知栏监测APP",
+      "url": "https://docs.zhifux.com/read/zhifufm/robotapp",
+      "http_status": 200,
+      "chars": 1994,
+      "sha256": "b688e95bf1a992845b0e7d396a186b0bfa81ecd4ae0433983ab89458e7ee52c2",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "qrappid",
+      "title": "第1步：方式2支付宝收款自动监测",
+      "url": "https://docs.zhifux.com/read/zhifufm/qrappid",
+      "http_status": 200,
+      "chars": 1359,
+      "sha256": "683b164cac21764c45f5e39b6c3442077a295257573637480cb473527fb55a30",
+      "scope": "adapted",
+      "guide": "native_qr"
+    },
+    {
+      "slug": "w10wx",
+      "title": "第1步：方式3微信收款监测电脑版本",
+      "url": "https://docs.zhifux.com/read/zhifufm/w10wx",
+      "http_status": 200,
+      "chars": 458,
+      "sha256": "d15fb927f733cc2119da31691e724cbe01c34565bc046963ec372b6beab1d436",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "qrconfig",
+      "title": "第2步：收款号配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/qrconfig",
+      "http_status": 200,
+      "chars": 691,
+      "sha256": "5aff5ef19ac92c30f1cca6cf572bac26f1932eb516f0d3b5177cc80872b86ec6",
+      "scope": "adapted",
+      "guide": "native_qr"
+    },
+    {
+      "slug": "personali",
+      "title": "支付宝系",
+      "url": "https://docs.zhifux.com/read/zhifufm/personali",
+      "http_status": 200,
+      "chars": 2022,
+      "sha256": "9fd0af27c5667de2a18eb9af65d040efb0192182f773fdd8ed2059a342958278",
+      "scope": "adapted",
+      "guide": "native_qr"
+    },
+    {
+      "slug": "wxqrcode",
+      "title": "微信收款码",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxqrcode",
+      "http_status": 200,
+      "chars": 536,
+      "sha256": "354b9c67b6980557996bba197b652314e8ee7ca4756a252b0b7bebabff88b239",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "otherqr",
+      "title": "三方机构码",
+      "url": "https://docs.zhifux.com/read/zhifufm/otherqr",
+      "http_status": 200,
+      "chars": 146,
+      "sha256": "185931e2b32ccc9695d97b4a1817806603c2843fa02b9311ba27d6fe0cb61c7d",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "bankcard",
+      "title": "个人网银卡",
+      "url": "https://docs.zhifux.com/read/zhifufm/bankcard",
+      "http_status": 200,
+      "chars": 1280,
+      "sha256": "ae7ebcbd8e79a48093f45ca248fcef9d6c716deea1ab4980ec081e07d5e1f106",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "signstep",
+      "title": "签约类型",
+      "url": "https://docs.zhifux.com/read/zhifufm/signstep",
+      "http_status": 200,
+      "chars": 1255,
+      "sha256": "cafe52f8737ee68035b84e9b6ca2fc6a843a8057bb3d719b30557f0e1a3c800b",
+      "scope": "adapted",
+      "guide": "start"
+    },
+    {
+      "slug": "balipay",
+      "title": "支付宝官方",
+      "url": "https://docs.zhifux.com/read/zhifufm/balipay",
+      "http_status": 200,
+      "chars": 2570,
+      "sha256": "92423e63f9155a2445fe08d58cc55b67de8a74e46cd0f8c699688c3c4cd265f4",
+      "scope": "adapted",
+      "guide": "alipay"
+    },
+    {
+      "slug": "wxpay",
+      "title": "微信支付官方",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxpay",
+      "http_status": 200,
+      "chars": 4521,
+      "sha256": "217c1a0adf2496c5271eca0de8cb9bf8cdb44abc4a24400da2b22325c6f989d4",
+      "scope": "adapted",
+      "guide": "wechat_v3"
+    },
+    {
+      "slug": "sandhm",
+      "title": "杉德河马付",
+      "url": "https://docs.zhifux.com/read/zhifufm/sandhm",
+      "http_status": 200,
+      "chars": 348,
+      "sha256": "50e11a741bc7ec0c30399f6056ea5ec348b56707420f6f597cceee6f407fbd1a",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "fuioupay",
+      "title": "富友支付",
+      "url": "https://docs.zhifux.com/read/zhifufm/fuioupay",
+      "http_status": 200,
+      "chars": 433,
+      "sha256": "f63c98fee38ed07b6da261437af3d9c82dfb472e96f3d5f50f0755b075df2b1f",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "huifu",
+      "title": "汇付支付",
+      "url": "https://docs.zhifux.com/read/zhifufm/huifu",
+      "http_status": 200,
+      "chars": 185,
+      "sha256": "d1d856703e580701129ceb51564ee36478e326f79997b8d3c45822135eccfb8c",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "yeepay",
+      "title": "易宝支付",
+      "url": "https://docs.zhifux.com/read/zhifufm/yeepay",
+      "http_status": 200,
+      "chars": 363,
+      "sha256": "80f689970cbbdfa919ef9df7c478bc9b42934ff62d7c24297333b0b7cb7cde84",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "apiqr",
+      "title": "API收款码",
+      "url": "https://docs.zhifux.com/read/zhifufm/apiqr",
+      "http_status": 200,
+      "chars": 1152,
+      "sha256": "e2fc021c32dff1c1634056dec52b8f48c6d839c9a98dd620ae2f1d8c1f10b6e3",
+      "scope": "adapted",
+      "guide": "testing"
+    },
+    {
+      "slug": "api",
+      "title": "支付接口API列表",
+      "url": "https://docs.zhifux.com/read/zhifufm/api",
+      "http_status": 200,
+      "chars": 1285,
+      "sha256": "02a9ff5f72c238b650f0df24e3511c59f187d95e0afbf558b1d690ffe20ab35d",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "startorder",
+      "title": "创建订单接口",
+      "url": "https://docs.zhifux.com/read/zhifufm/startorder",
+      "http_status": 200,
+      "chars": 12012,
+      "sha256": "a93d7f2b2d059ba56156e6f71a03192630c80d0332be9325b7dae253230b1c75",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "notify",
+      "title": "支付成功回调",
+      "url": "https://docs.zhifux.com/read/zhifufm/notify",
+      "http_status": 200,
+      "chars": 5014,
+      "sha256": "93cbd72dd988ca0d4cb4de1227402cccb157ce04d2bdfff2ed21fb9ff8a97557",
+      "scope": "adapted",
+      "guide": "callbacks"
+    },
+    {
+      "slug": "getopenid",
+      "title": "微信小程序调起支付",
+      "url": "https://docs.zhifux.com/read/zhifufm/getopenid",
+      "http_status": 200,
+      "chars": 2112,
+      "sha256": "8e5586ff62e1c46a463eb84f69fa6efaf67ff56e018bd0159326eb900a795082",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "querybyid",
+      "title": "平台订单号查询订单",
+      "url": "https://docs.zhifux.com/read/zhifufm/querybyid",
+      "http_status": 200,
+      "chars": 1792,
+      "sha256": "714ac738d8487fab400d108dedb3b130a40590f73173e0843c9bdbc894684b57",
+      "scope": "adapted",
+      "guide": "orders"
+    },
+    {
+      "slug": "querybyoutno",
+      "title": "商户订单号查询订单",
+      "url": "https://docs.zhifux.com/read/zhifufm/querybyoutno",
+      "http_status": 200,
+      "chars": 1796,
+      "sha256": "d1ca93a8e2641188c1f6f55fb0f399747c9b31959e7b5aecbf6f0433eac3aefb",
+      "scope": "adapted",
+      "guide": "orders"
+    },
+    {
+      "slug": "api-epay",
+      "title": "易支付系免开发接入",
+      "url": "https://docs.zhifux.com/read/zhifufm/api-epay",
+      "http_status": 200,
+      "chars": 1396,
+      "sha256": "e1d02e5e94c966e8785baf09464c09d9156cb2cfade15b555c5fc34be19db3a0",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "apiv2",
+      "title": "兼容模式接口",
+      "url": "https://docs.zhifux.com/read/zhifufm/apiv2",
+      "http_status": 200,
+      "chars": 1026,
+      "sha256": "db5fdc18a1915fbd8552230179d027f730d2849acfe56f4718d25eb669647777",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "v2order",
+      "title": "易支付系创建订单",
+      "url": "https://docs.zhifux.com/read/zhifufm/v2order",
+      "http_status": 200,
+      "chars": 5676,
+      "sha256": "9c01801c2446702db43ed43ca4f80a99e081ae29592701c6eb11b8846a541919",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "notifyv2",
+      "title": "易支付系支付通知",
+      "url": "https://docs.zhifux.com/read/zhifufm/notifyv2",
+      "http_status": 200,
+      "chars": 3418,
+      "sha256": "fb9153e9680c7ea46b4b1372aa1ba746210367aed6180f3fc6866b051e1f6712",
+      "scope": "adapted",
+      "guide": "callbacks"
+    },
+    {
+      "slug": "apiqa",
+      "title": "对接API常见问题",
+      "url": "https://docs.zhifux.com/read/zhifufm/apiqa",
+      "http_status": 200,
+      "chars": 3146,
+      "sha256": "f4520c3f8e7967b2cd01b929b3918886a7537b4c74e16590a5d93b1743d855eb",
+      "scope": "adapted",
+      "guide": "troubleshooting"
+    },
+    {
+      "slug": "download",
+      "title": "下载专区",
+      "url": "https://docs.zhifux.com/read/zhifufm/download",
+      "http_status": 200,
+      "chars": 128,
+      "sha256": "8251397ab5377c2a4d1cb29c0724c8d13d33507707c97ff9ea85235a348ae71d",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "downdemo",
+      "title": "demo下载",
+      "url": "https://docs.zhifux.com/read/zhifufm/downdemo",
+      "http_status": 200,
+      "chars": 1587,
+      "sha256": "78d999112240ed73b6c37845dfe33fa0c91d0fc7ce352718c3cf4541a7340576",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "wxmin",
+      "title": "微信支付小程序接入示例源码",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxmin",
+      "http_status": 200,
+      "chars": 4419,
+      "sha256": "c4752f645f100feef10d982bd6dbeb6105399bc26a5316ecb4e147eaefdea40c",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "downapp",
+      "title": "监测软件",
+      "url": "https://docs.zhifux.com/read/zhifufm/downapp",
+      "http_status": 200,
+      "chars": 273,
+      "sha256": "657fab86c95c91fec9249add5b6a79a9865cbe33a9292f8e7fd57fc4a2f4442f",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "app",
+      "title": "方式1：全免签收款监测安卓版",
+      "url": "https://docs.zhifux.com/read/zhifufm/app",
+      "http_status": 200,
+      "chars": 1685,
+      "sha256": "e82cd8d343376cb12b373b55406d21767318b3d602399b406da1e426614f1c6b",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wxpcsoft",
+      "title": "【停用】微信3.9版收款监测电脑常用版",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxpcsoft",
+      "http_status": 200,
+      "chars": 597,
+      "sha256": "00724a76edce1b50432b4e21b4d54f40f5250f0f90eaf5136f2bb18b62091d78",
+      "scope": "retired",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wxpcv2",
+      "title": "【停用】微信收款监测电脑内存版",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxpcv2",
+      "http_status": 200,
+      "chars": 438,
+      "sha256": "c40a6eaada9620e41153ee901b7f2d3870a29d4ed12682f4f290ec1d26e66c93",
+      "scope": "retired",
+      "guide": "limitations"
+    },
+    {
+      "slug": "pcsoft",
+      "title": "【停用】支付宝转账监测软件",
+      "url": "https://docs.zhifux.com/read/zhifufm/pcsoft",
+      "http_status": 200,
+      "chars": 335,
+      "sha256": "8ab9fbcaed7524f50fbd5976024e71a3269361d302038fb93b7b8a4ef5bccbea",
+      "scope": "retired",
+      "guide": "limitations"
+    },
+    {
+      "slug": "downplugins",
+      "title": "接口插件下载",
+      "url": "https://docs.zhifux.com/read/zhifufm/downplugins",
+      "http_status": 200,
+      "chars": 726,
+      "sha256": "c7da2a5beb1194cb88b70d9440d1c22eefcd37ebec4c9179b1e78ccfc7b3f33c",
+      "scope": "adapted",
+      "guide": "integration"
+    },
+    {
+      "slug": "dedeplugin",
+      "title": "插件for DedeCMS安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/dedeplugin",
+      "http_status": 200,
+      "chars": 886,
+      "sha256": "9b79521da8a751dd59aeabb8fd7ddc70fa355df9bf0f5947f0c3edecc61096ff",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "dz-invite",
+      "title": "DiscuzX邀请码购买插件",
+      "url": "https://docs.zhifux.com/read/zhifufm/dz-invite",
+      "http_status": 200,
+      "chars": 653,
+      "sha256": "a91550d020273f33dcaba37ec7427bab9768ebdd2f8e2efce04ca0e52af9a40c",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "shopxo",
+      "title": "shopxo支付插件",
+      "url": "https://docs.zhifux.com/read/zhifufm/shopxo",
+      "http_status": 200,
+      "chars": 812,
+      "sha256": "3f102d133a71dbeb77300533bfca0d7a1bcd8274ef4d7d064a3e7f52e030a95b",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "payadmin",
+      "title": "payadmin派爱支付程序pay7安装说明",
+      "url": "https://docs.zhifux.com/read/zhifufm/payadmin",
+      "http_status": 200,
+      "chars": 3173,
+      "sha256": "69b3cedf7f345e1629cfd971b556b3e8e8bddbeda359c14652f119653938b1fe",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "payadmin9",
+      "title": "payadmin派爱支付程序V6使用说明",
+      "url": "https://docs.zhifux.com/read/zhifufm/payadmin9",
+      "http_status": 200,
+      "chars": 192,
+      "sha256": "fb947cd4ec34f09d970eb1bea2d4c12229c4a8335a56151205dfba8d0ea19e34",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "riv5",
+      "title": "RiPro-v5-7.1.3主题接入支付FM插件",
+      "url": "https://docs.zhifux.com/read/zhifufm/riv5",
+      "http_status": 200,
+      "chars": 7447,
+      "sha256": "ab6a46d44387d4abef33b60dd4f2d3a861a9392c8b8e209d1516e72ed6f2c74a",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "dzplugin",
+      "title": "插件for DiscuzX积分充值安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/dzplugin",
+      "http_status": 200,
+      "chars": 1059,
+      "sha256": "ecce20b35a2605527a5517a5685aa8c7ac96499f87b69522793a7a4d04589d8e",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "dzplugin2",
+      "title": "插件for DiscuzX双币种积分充值安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/dzplugin2",
+      "http_status": 200,
+      "chars": 578,
+      "sha256": "6ac43a714448856c371530c973dd31fbdbdbe4d7f147d8bd610e73186ac3e617",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "dzgroup",
+      "title": "插件for DiscuzX会员组安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/dzgroup",
+      "http_status": 200,
+      "chars": 1299,
+      "sha256": "c823a790f5fca3fbd335829caf7e96f0773a3711b427254977340e4d2356df38",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wpplugin",
+      "title": "插件for WordPress安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/wpplugin",
+      "http_status": 200,
+      "chars": 1131,
+      "sha256": "a667b4370982244c242b7285720204de8324b7d0a69ffd18d02e0a33344583e1",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "zhiyuplugin",
+      "title": "插件for 知宇/伯乐卡密系统安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/zhiyuplugin",
+      "http_status": 200,
+      "chars": 1051,
+      "sha256": "af605c7f07fbb4d2d441c60d8c110c5bb285131446b3911a2d27ba9f6bca334f",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "acgfaka",
+      "title": "插件for acg-faka异次元发卡系统安装配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/acgfaka",
+      "http_status": 200,
+      "chars": 4821,
+      "sha256": "d3699af8ac9d64d5155ee645be8b714bc8540db13ea8d7ce4522fbdb1fe43711",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "msvodx",
+      "title": "2023最新版魅思视频APP系统插件",
+      "url": "https://docs.zhifux.com/read/zhifufm/msvodx",
+      "http_status": 200,
+      "chars": 468,
+      "sha256": "f82053abf321aaf4ec50703358cb8bcb9b5fbaf5fd8f29dc9954f891458a920b",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "v2-plugin",
+      "title": "兼容插件使用",
+      "url": "https://docs.zhifux.com/read/zhifufm/v2-plugin",
+      "http_status": 200,
+      "chars": 21,
+      "sha256": "a4a0016998bf81df82e2e39446128c66028bf6ec3e35b94f26e4000320e00012",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "pzibilll",
+      "title": "如何在Zibill主题里面使用各种支付方式",
+      "url": "https://docs.zhifux.com/read/zhifufm/pzibilll",
+      "http_status": 200,
+      "chars": 673,
+      "sha256": "972bf98687dc286d1a92daf0fc27ec8a5285dcc1f87a99cffa13882de7c90ab4",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "useshare",
+      "title": "经验分享",
+      "url": "https://docs.zhifux.com/read/zhifufm/useshare",
+      "http_status": 200,
+      "chars": 212,
+      "sha256": "bc2cfcd404d394866d3db5f64f7f4be6d889fe16c25c173a5d6a66734da94159",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wppayfm",
+      "title": "WorPress原生接入分享",
+      "url": "https://docs.zhifux.com/read/zhifufm/wppayfm",
+      "http_status": 200,
+      "chars": 1051,
+      "sha256": "7c35ec346913b90cc90f6d030537848cd7fae2aab70761bbd5be7bd737654639",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wpripro",
+      "title": "WordPress之ripro-v2接入分享",
+      "url": "https://docs.zhifux.com/read/zhifufm/wpripro",
+      "http_status": 200,
+      "chars": 2126,
+      "sha256": "40f8cd62889f0026e5c2cb48bde500983d038d0e3f3e0b83a8cb046e0ca23315",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "apayun",
+      "title": "阿帕云Zkeys系统接入分享",
+      "url": "https://docs.zhifux.com/read/zhifufm/apayun",
+      "http_status": 200,
+      "chars": 10110,
+      "sha256": "002adcd2d2796a5e0f67e40ae35b6a404bd7ffe519b2ca501c7b3c3dc3a50b26",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "help",
+      "title": "后台使用手册",
+      "url": "https://docs.zhifux.com/read/zhifufm/help",
+      "http_status": 200,
+      "chars": 77,
+      "sha256": "71cc2f312dd5ca0329f67ba23428a3116176d64eec4f65071f9f0ddb7d43d0d1",
+      "scope": "adapted",
+      "guide": "orders"
+    },
+    {
+      "slug": "merchant-info",
+      "title": "用户中心",
+      "url": "https://docs.zhifux.com/read/zhifufm/merchant-info",
+      "http_status": 200,
+      "chars": 1001,
+      "sha256": "56308f839bf4a06569a518c3a2b364004a97b6884a42a206e1967e8200a58e51",
+      "scope": "adapted",
+      "guide": "orders"
+    },
+    {
+      "slug": "morder",
+      "title": "商户订单",
+      "url": "https://docs.zhifux.com/read/zhifufm/morder",
+      "http_status": 200,
+      "chars": 583,
+      "sha256": "b0ee2e785686b22b592d7f2d1516fe597397d13f12a82b50ee890c8838c278bd",
+      "scope": "adapted",
+      "guide": "orders"
+    },
+    {
+      "slug": "personmenu",
+      "title": "免签类型",
+      "url": "https://docs.zhifux.com/read/zhifufm/personmenu",
+      "http_status": 200,
+      "chars": 6,
+      "sha256": "13eb44106977ab04b6204136eec5d5285dd0393d98bf0fbbaa523585c2b8861e",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "lockqrcode",
+      "title": "固定收款码配置专题",
+      "url": "https://docs.zhifux.com/read/zhifufm/lockqrcode",
+      "http_status": 200,
+      "chars": 943,
+      "sha256": "d4a01033af6d571643df52553ff76fdada5e60ccae245d7116936f7affa5b85b",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "payeesetting",
+      "title": "免签收款规则",
+      "url": "https://docs.zhifux.com/read/zhifufm/payeesetting",
+      "http_status": 200,
+      "chars": 237,
+      "sha256": "c9bd3f4c9e5b570a11081aed0d54a7b106b66be63a06c6fd15d3fad1270da210",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "apiloop",
+      "title": "轮循池",
+      "url": "https://docs.zhifux.com/read/zhifufm/apiloop",
+      "http_status": 200,
+      "chars": 386,
+      "sha256": "4ea16ae6dcd347850578860aef4446623fa9d791937f89aab6c49794a0c940c7",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "signwx",
+      "title": "代签约",
+      "url": "https://docs.zhifux.com/read/zhifufm/signwx",
+      "http_status": 200,
+      "chars": 292,
+      "sha256": "b5037a9c01e84204549317b6c7ffd882bdf61245b5ee4c9d18a993b606c479c9",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "handbook",
+      "title": "其他手册",
+      "url": "https://docs.zhifux.com/read/zhifufm/handbook",
+      "http_status": 200,
+      "chars": 49,
+      "sha256": "f6ce64aed3c578ff16e428793e5aa7609c839102045daa94f1fdcf06b4a9f43d",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "person",
+      "title": "免签类型相关",
+      "url": "https://docs.zhifux.com/read/zhifufm/person",
+      "http_status": 200,
+      "chars": 170,
+      "sha256": "18ccb9456297ad5b80f04d7475c2516eb4b218245d4f60eb3acbc22b60e3cad5",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "alipaysetting",
+      "title": "手机支付宝配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/alipaysetting",
+      "http_status": 200,
+      "chars": 413,
+      "sha256": "472ee0f2746f33506db0f11ee891ea0c9a23b7fda89ea6cb04e7985cc1ff0032",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "hw_weixin",
+      "title": "华为手机-微信状态栏显示",
+      "url": "https://docs.zhifux.com/read/zhifufm/hw_weixin",
+      "http_status": 200,
+      "chars": 412,
+      "sha256": "6a1e6cfe739ed48aaea7048d4b343c231a38e76e704585fe3683ce224b60a1e9",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "jsnxapp",
+      "title": "农商收银宝",
+      "url": "https://docs.zhifux.com/read/zhifufm/jsnxapp",
+      "http_status": 200,
+      "chars": 260,
+      "sha256": "1213b0d272ed4a57ca0f9c29c600b8146013c2ad6af89f497ba81d7d47fc0fa6",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "unipaysetting",
+      "title": "云闪付APP配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/unipaysetting",
+      "http_status": 200,
+      "chars": 280,
+      "sha256": "fc26df159c0ae2075e1524276abbe204b02af6a54afd3df97ef9c5f916130cd6",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "wechatsetting",
+      "title": "手机微信配置",
+      "url": "https://docs.zhifux.com/read/zhifufm/wechatsetting",
+      "http_status": 200,
+      "chars": 803,
+      "sha256": "d0557a6383f7064b1f0fac6d81d956b685f8d4c806d099502147575880cbc2cf",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "bankappcmb",
+      "title": "招商银行APP设置",
+      "url": "https://docs.zhifux.com/read/zhifufm/bankappcmb",
+      "http_status": 200,
+      "chars": 703,
+      "sha256": "d2529c32d7e019a9dce8ef0851dfacad311af4237735fd8a7fe84d2d71fc47fb",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "bankappccb",
+      "title": "建行APP设置",
+      "url": "https://docs.zhifux.com/read/zhifufm/bankappccb",
+      "http_status": 200,
+      "chars": 720,
+      "sha256": "7c0e171fdeee478fba33ff104f182f5bd019e37e7846c5d782599782f8af9e26",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "genqr",
+      "title": "收款码制作教程",
+      "url": "https://docs.zhifux.com/read/zhifufm/genqr",
+      "http_status": 200,
+      "chars": 351,
+      "sha256": "6dd75c9fca2e0a0256ee6ca8f05003a2d28afe91fda0bc18bfd0ff011c8a359f",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "sign",
+      "title": "签约类型相关",
+      "url": "https://docs.zhifux.com/read/zhifufm/sign",
+      "http_status": 200,
+      "chars": 47,
+      "sha256": "a61942316128ccde777d69fb5ae82dda0f48b98983e3773824fbea278f0c2281",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "alipayname",
+      "title": "修改支付宝商户别名",
+      "url": "https://docs.zhifux.com/read/zhifufm/alipayname",
+      "http_status": 200,
+      "chars": 115,
+      "sha256": "f9cd82add3e1acae4c44da5cf43c07f5777aa28924f7914ff098a3c1457dbf2d",
+      "scope": "adapted",
+      "guide": "alipay"
+    },
+    {
+      "slug": "alipayrsa",
+      "title": "支付宝RSA密钥生成教程",
+      "url": "https://docs.zhifux.com/read/zhifufm/alipayrsa",
+      "http_status": 200,
+      "chars": 441,
+      "sha256": "b9d82d951124fa282ddd6786a743a1afd92d89032c833a34ec7faffe884d563a",
+      "scope": "adapted",
+      "guide": "alipay_keys"
+    },
+    {
+      "slug": "applyaliapy",
+      "title": "申请/查看支付宝支付产品",
+      "url": "https://docs.zhifux.com/read/zhifufm/applyaliapy",
+      "http_status": 200,
+      "chars": 422,
+      "sha256": "fa9cbf7945ef5b03077fcfae61bb36186f870ec3b859cfdaaa2f08e11a210b86",
+      "scope": "adapted",
+      "guide": "alipay"
+    },
+    {
+      "slug": "applywechat",
+      "title": "申请/查看微信支付产品",
+      "url": "https://docs.zhifux.com/read/zhifufm/applywechat",
+      "http_status": 200,
+      "chars": 570,
+      "sha256": "2d3378319544ea7b75817c3ac5748e8245db4c786f0bce0a6ffa3a3d5e54708f",
+      "scope": "adapted",
+      "guide": "wechat_v3"
+    },
+    {
+      "slug": "fuyouali",
+      "title": "富友商户支付宝收款授权指南",
+      "url": "https://docs.zhifux.com/read/zhifufm/fuyouali",
+      "http_status": 200,
+      "chars": 235,
+      "sha256": "f30bdafc30740e304c2d0affa17ffaafdd3fb16d757a720c84e219798e6abc79",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "fuyouwx",
+      "title": "富友商户微信收款授权指南",
+      "url": "https://docs.zhifux.com/read/zhifufm/fuyouwx",
+      "http_status": 200,
+      "chars": 127,
+      "sha256": "8fa3ff48db92d244b861a5a80989aaa47eb96d8c23c3762b9a41de8775f0c9db",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "lookstoreid",
+      "title": "如何查看杉德河马付的门店号",
+      "url": "https://docs.zhifux.com/read/zhifufm/lookstoreid",
+      "http_status": 200,
+      "chars": 17,
+      "sha256": "49fe74987ff1afa070352826a7fb72004b50ad69908e982ff307b602a4b7b228",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "sandpay-real",
+      "title": "杉德支付开户意愿确认教程",
+      "url": "https://docs.zhifux.com/read/zhifufm/sandpay-real",
+      "http_status": 200,
+      "chars": 446,
+      "sha256": "238aea9f02d3829c1ceb86b6da9b02303620862181902eda63abedfbc64e16ad",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "sandpayrsa",
+      "title": "杉德RSA密钥设置教程",
+      "url": "https://docs.zhifux.com/read/zhifufm/sandpayrsa",
+      "http_status": 200,
+      "chars": 322,
+      "sha256": "d47658d80d71236c35ce5d25c2765f8ba07750e83e3ded7c62a26a6b95cac96e",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "sanpayqa1",
+      "title": "杉德支付如何进行金额认证",
+      "url": "https://docs.zhifux.com/read/zhifufm/sanpayqa1",
+      "http_status": 200,
+      "chars": 222,
+      "sha256": "e97c0229332ed5f8829a7d45442dcadfe0eb30f7fcf0212d90a86d513c6c735a",
+      "scope": "unsupported",
+      "guide": "limitations"
+    },
+    {
+      "slug": "tradingComplaint",
+      "title": "支付宝交易纠纷投诉处理指南",
+      "url": "https://docs.zhifux.com/read/zhifufm/tradingComplaint",
+      "http_status": 200,
+      "chars": 304,
+      "sha256": "58dd89f1f39f9ce5a2805bd759dfb8d7d7bc1f5413e04c09f89d589a8232621c",
+      "scope": "adapted",
+      "guide": "refunds"
+    },
+    {
+      "slug": "wxappid",
+      "title": "微信支付商户如何关联服务号的APPID",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxappid",
+      "http_status": 200,
+      "chars": 571,
+      "sha256": "d9c91038d9dd6536949e106392796eb548ca2e3777aa81aea4ac5afed3ada450",
+      "scope": "adapted",
+      "guide": "wechat_v3"
+    },
+    {
+      "slug": "wxpublickey",
+      "title": "微信支付商户如何查看平台公钥",
+      "url": "https://docs.zhifux.com/read/zhifufm/wxpublickey",
+      "http_status": 200,
+      "chars": 65,
+      "sha256": "5289fe6c75dae4324156b24a46d42a016525289b17492fd8f19ba305dc0a2eb8",
+      "scope": "adapted",
+      "guide": "wechat_v3"
+    },
+    {
+      "slug": "avideo",
+      "title": "视频合集",
+      "url": "https://docs.zhifux.com/read/zhifufm/avideo",
+      "http_status": 200,
+      "chars": 505,
+      "sha256": "16ba59abd9a61bab35470e4b500f5b4646f630cc8b5e35d924ea7fdeb47c6dea",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "other",
+      "title": "发票和协议",
+      "url": "https://docs.zhifux.com/read/zhifufm/other",
+      "http_status": 200,
+      "chars": 404,
+      "sha256": "a858f7414ffc3ffd662f8a44f3ae85bb9932f8e99c1ce9dcb478fe8edc912a89",
+      "scope": "reference",
+      "guide": "limitations"
+    },
+    {
+      "slug": "notice",
+      "title": "域名说明公告",
+      "url": "https://docs.zhifux.com/read/zhifufm/notice",
+      "http_status": 200,
+      "chars": 270,
+      "sha256": "be488920a5c22a52f8f4fa0cf84a64e209562d78ca73b6185a3a7c707276eead",
+      "scope": "reference",
+      "guide": "limitations"
+    }
+  ]
+}

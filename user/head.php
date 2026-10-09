@@ -268,6 +268,7 @@ $conf = array_merge($conf, $groupconfig);
                 </a>
               </li>
 			  <?php }?>
+              <li><a href="/index.php?doc=help"><i class="fa fa-question-circle"></i><span>帮助中心</span></a></li>
               <li>
                 <a href="/doc.html" target="_blank">
                   <i class="fa fa-book"></i>

@@ -118,7 +118,10 @@ function initTree(data) {
 			menuTree.selectNode(nodes[0]);
 		}
 		else {
-			menuTree.selectNode(menuTree.getNodeByParam('id', currentCatalog.id, null));
+			var docName = new URLSearchParams(location.search).get('doc');
+			var relativeUrl = docName ? docName + '.html' : location.pathname.split('/').pop();
+			var currentNode = menuTree.getNodeByParam('url', relativeUrl, null);
+			if (currentNode) menuTree.selectNode(currentNode);
 		}
 	}
 }

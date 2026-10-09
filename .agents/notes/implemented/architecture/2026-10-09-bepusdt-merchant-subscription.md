@@ -50,6 +50,8 @@ Asia/Shanghai 自然月语义，按实际付款时 `max(旧到期, 当前时间)
 
 [运行说明](../../../../docs/BEPUSDT_SUBSCRIPTION.md) 记录设置、故障核对、历史订单和回滚边界。独立网关 main、正式版和 PHP 插件分别跟踪，禁止直接合并到 Epay，也没有自动更新或定时同步任务。
 
+操作教程与来源适配见[商户帮助中心](../feature/2026-10-09-merchant-help-center.md)；该文档入口不改变本篇的支付和权限边界。
+
 ## Alternatives considered
 
 - **仅启用已有插件**：改动最小，但缺少商户权限、凭据保护及平台权益隔离，不能支撑本次商业模式。

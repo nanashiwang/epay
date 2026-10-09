@@ -11,6 +11,7 @@ include './head.php';
 <div id="content" class="app-content" role="main"><div class="app-content-body"><main class="collection" id="collection" data-csrf="<?=htmlspecialchars($_SESSION['collection_csrf'],ENT_QUOTES,'UTF-8')?>">
   <header class="collection-header"><div><div class="collection-eyebrow">支付宝 · 商家账单</div><h1>支付宝收款码</h1><p>资金直接进入你的支付宝，到账与订单在这里核对。</p></div><button class="btn btn-primary" id="add-account">＋ 添加收款账号</button></header>
   <?php if(!empty($_GET['paid'])) { $paid=$DB->getRow('SELECT status FROM pre_order WHERE trade_no=:trade AND uid=:uid AND tid=3',[':trade'=>(string)$_GET['paid'],':uid'=>$uid]); if($paid && (int)$paid['status']===1) { ?><div class="collection-notice good">测试订单已到账。业务站的异步通知仍需使用真实业务订单验证。</div><?php }} ?>
+  <p class="collection-help"><a href="/index.php?doc=help&amp;topic=native_qr">查看配置教程与常见问题 →</a></p>
   <div class="collection-notice">先添加账号并校验接口 → 启用监测 → 测试收款 → 设为默认。<?php echo $selfService?'包月模式未设置默认时，该支付方式停止收款；不收按笔平台服务费。':'未设置默认时，订单沿用平台通道。'; ?>直收本金不计入平台可提现余额。</div>
   <div id="collection-plan" class="collection-notice" hidden></div>
   <div id="collection-message" role="status" aria-live="polite" hidden></div>

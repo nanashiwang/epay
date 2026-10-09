@@ -9,6 +9,7 @@ $title='USDT 收款账号'; include './head.php';
 <div id="content" class="app-content" role="main"><div class="app-content-body"><main class="collection" id="bepusdt" data-csrf="<?=htmlspecialchars($_SESSION['bepusdt_csrf'],ENT_QUOTES,'UTF-8')?>">
   <header class="collection-header"><div><div class="collection-eyebrow">BEpusdt · USDT / TRC20</div><h1>USDT 收款账号</h1><p>客户付款直达你的钱包，包月套餐不收按笔服务费。</p></div><button class="btn btn-primary" id="bep-add" disabled>＋ 添加网关</button></header>
   <nav class="collection-tabs" aria-label="收款方式"><?php if(!empty($conf['merchant_channels'])){?><a class="btn btn-default" href="channels.php">支付通道</a><?php } ?><a class="btn btn-default" href="collection.php">支付宝收款</a><a class="btn btn-primary" href="bepusdt.php" aria-current="page">USDT 收款</a><a class="btn btn-default" href="groupbuy.php">我的套餐</a></nav>
+  <p class="collection-help"><a href="/index.php?doc=help&amp;topic=bepusdt">查看网关配置、测试与故障排查 →</a></p>
   <div id="bep-plan" class="collection-notice">正在读取套餐…</div>
   <div class="collection-notice">保存配置 → 校验接口 → 测试到账 → 启用并设为默认。收款使用你自己的 BEpusdt；请按收银台显示的网络、地址和精确币额转账。</div>
   <div id="bep-message" role="status" aria-live="polite" hidden></div>

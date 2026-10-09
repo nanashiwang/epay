@@ -25,6 +25,8 @@ Status: implemented
 - 新[统一入口](../../../../user/channels.php)、[会话 API](../../../../user/channels_api.php)、[账号与快照服务](../../../../includes/lib/MerchantChannel.php)和[审查目录](../../../../includes/lib/MerchantChannelCatalog.php)替代管理员逐户配置；类型、子通道及插件仍使用现有定义。支付宝原生码与通用支付宝账号切换默认时互斥，微信/QQ/USDT 默认独立。
 - 受影响入口包括 submit2、支付 API、在线收款、Plugin 调度、到账处理、通知重试、套餐购买/到期、后台模板编辑和商户投诉附件归属检查。部署采用[显式追加迁移](../../../../scripts/merchant-channel-setup.php)，不自动更改旧套餐。
 
+操作教程与来源适配见[商户帮助中心](../feature/2026-10-09-merchant-help-center.md)；该文档入口不改变本篇的支付和权限边界。
+
 ## Alternatives considered
 
 - 将管理员表单完整开放：覆盖最广，但插件包含共享文件、公众号、转账和任意外部地址，不能构成租户边界。
