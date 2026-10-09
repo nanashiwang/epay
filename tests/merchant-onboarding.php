@@ -10,6 +10,9 @@ $html=result(spawn(['page'=>'home','uid'=>1003]));check(str_contains($html,'你�
 order(['uid'=>1003]);check(!lib\MerchantOnboarding::firstVisit($DB,$u,$conf),'historical business merchant not auto migrated');
 $html=result(spawn(['page'=>'onboarding','conf'=>['group_buy'=>0,'cert_force'=>1]]));check(str_contains($html,'套餐购买暂未开放') && str_contains($html,'检查实名认证'),'paused purchase and required certification explained');
 $a=lib\MerchantOnboarding::progress($DB,1000);check(!$a['integrated'],'payment alone does not prove integration');
+$DB->update('collection_account',['deleted_at'=>null,'verified_at'=>'NOW()'],['id'=>93]);
+$a=lib\MerchantOnboarding::progress($DB,1000);check($a['nativeVerified']===1 && $a['tested']===0,'native credential verification never counts as paid test');
+check(lib\MerchantOnboarding::progress($DB,1001)['nativeVerified']===0,'native verification progress is owner scoped');
 $DB->insert('collection_notify',['uid'=>1000,'trade_no'=>$managed,'target'=>'https://example.invalid','success'=>1,'created_at'=>'NOW()']);
 check(lib\MerchantOnboarding::progress($DB,1000)['integrated'],'business success proves integration');
 check(!lib\MerchantOnboarding::progress($DB,1001)['integrated'],'progress owner isolation');
