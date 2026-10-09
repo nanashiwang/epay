@@ -90,7 +90,7 @@ elseif($_GET['do']=='order'){
 	$thtime=date("Y-m-d H:i:s",time()-3600*48);
 
 	$CACHE->clean();
-	$DB->exec("delete from pre_order where status=0 and addtime<'{$thtime}'");
+	\lib\OrderRetention::deleteBefore($DB,$thtime,true);
 	$DB->exec("delete from pre_regcode where `time`<'".(time()-3600*24)."'");
 	$DB->exec("delete from pre_blacklist where endtime is not null and endtime<NOW()");
 	$DB->exec("delete from pay_wxkflog where addtime<'".date("Y-m-d H:i:s", strtotime('-48 hours'))."'");

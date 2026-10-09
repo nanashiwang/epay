@@ -177,7 +177,8 @@ case 'setStatus': //改变订单状态
 	$trade_no=trim($_GET['trade_no']);
 	$status=is_numeric($_GET['status'])?intval($_GET['status']):exit('{"code":200}');
 	if($status==5){
-		if($DB->exec("DELETE FROM pre_order WHERE trade_no='$trade_no'"))
+		if(\lib\OrderRetention::protectedOrder($DB,$trade_no)) exit('{"code":400,"msg":"该订单含收款、订阅或通知凭证，已保留供核对，不能删除"}');
+		if(\lib\OrderRetention::deleteOne($DB,$trade_no))
 			exit('{"code":200}');
 		else
 			exit('{"code":400,"msg":"删除订单失败！['.$DB->error().']"}');
@@ -208,9 +209,11 @@ break;
 case 'operation': //批量操作订单
 	$status=is_numeric($_POST['status'])?intval($_POST['status']):exit('{"code":-1,"msg":"请选择操作"}');
 	$checkbox=$_POST['checkbox'];
+	if(!is_array($checkbox)) exit('{"code":-1,"msg":"请选择订单"}');
+	if($status==4) foreach($checkbox as $trade_no) if(\lib\OrderRetention::protectedOrder($DB,$trade_no)) exit('{"code":-1,"msg":"所选订单含受保护凭证，整批未删除，请排除后重试"}');
 	$i=0;
 	foreach($checkbox as $trade_no){
-		if($status==4)$DB->exec("DELETE FROM pre_order WHERE trade_no='$trade_no'");
+		if($status==4){ if(!\lib\OrderRetention::deleteOne($DB,$trade_no)) continue; }
 		elseif($status==3){
 			\lib\Order::unfreeze($trade_no);
 		}

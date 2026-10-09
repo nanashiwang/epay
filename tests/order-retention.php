@@ -1,0 +1,24 @@
+<?php
+require __DIR__.'/merchant-operations.php';
+use lib\OrderRetention as Retention;
+$start=$checks;
+$DB->exec("UPDATE pre_order SET addtime=DATE_SUB(NOW(),INTERVAL 60 DAY)");
+foreach([$managed,$be,$platformBe,$native,$sub,$trade] as $id) check(Retention::protectedOrder($DB,$id),'protect snapshot '.$id);
+$ordinary=order(['status'=>0,'addtime'=>date('Y-m-d H:i:s',time()-60*86400)]);
+$pending=order(['status'=>0,'addtime'=>date('Y-m-d H:i:s',time()-60*86400)]);
+$DB->insert('bepusdt_order',['trade_no'=>$pending,'uid'=>1000,'account_id'=>92,'channel_id'=>1,'config_snapshot'=>'synthetic','money'=>10,'network'=>'TRC20','state'=>'unknown','created_at'=>'NOW()']);
+Retention::deleteBefore($DB,date('Y-m-d H:i:s',time()-48*3600),true);
+check(!$DB->find('order','trade_no',['trade_no'=>$ordinary]),'expired ordinary unpaid deleted');
+check((bool)$DB->find('order','trade_no',['trade_no'=>$pending]),'unknown BE order survives cron cleanup');
+check(Retention::deleteOne($DB,$pending)===0,'delete SQL enforces protection');
+$r=probe(['page'=>'orders-api','admin'=>1,'get'=>['act'=>'setStatus','status'=>5,'trade_no'=>$pending]]);
+check($r['code']===400,'admin single deletion rejects protected order');
+$ordinary=order();
+$r=probe(['page'=>'orders-api','admin'=>1,'get'=>['act'=>'operation'],'post'=>['status'=>4,'checkbox'=>[$ordinary,$pending]]]);
+check($r['code']===-1 && (bool)$DB->find('order','trade_no',['trade_no'=>$ordinary]),'mixed batch rejected before deleting ordinary order');
+$notify=order(['notify'=>-1,'addtime'=>date('Y-m-d H:i:s',time()-60*86400)]);
+Retention::deleteBefore($DB,date('Y-m-d H:i:s',time()-30*86400));
+check((bool)$DB->find('order','trade_no',['trade_no'=>$notify]),'failed notification survives admin cleanup');
+check((bool)$DB->find('order','trade_no',['trade_no'=>$managed]),'paid direct receipt survives admin cleanup');
+check(!$DB->find('order','trade_no',['trade_no'=>$legacy]),'ordinary historical receipt still cleanable');
+echo 'Order retention: '.($checks-$start)." checks passed\n";

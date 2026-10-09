@@ -51,6 +51,7 @@ jobs:
           set -o pipefail
           php tests/worker-isolation.php | tee /tmp/operations-result
           grep -q 'checks passed' /tmp/operations-result
+          php tests/order-retention.php
   docker:
     runs-on: ubuntu-latest
     steps:

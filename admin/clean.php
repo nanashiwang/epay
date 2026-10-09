@@ -16,9 +16,9 @@ $CACHE->clear();
 if(function_exists("opcache_reset"))@opcache_reset();
 showmsg('清理系统设置缓存成功！',1);
 }elseif($mod=='cleanorder'){
-$DB->exec("DELETE FROM `pre_order` WHERE addtime<'".date("Y-m-d H:i:s",strtotime("-30 days"))."'");
+\lib\OrderRetention::deleteBefore($DB,date("Y-m-d H:i:s",strtotime("-30 days")));
 $DB->exec("OPTIMIZE TABLE `pre_order`");
-showmsg('删除30天前订单记录成功！',1);
+showmsg('普通订单清理完成；收款、订阅及通知凭证已保留。',1);
 }elseif($mod=='cleansettle'){
 $DB->exec("DELETE FROM `pre_settle` WHERE addtime<'".date("Y-m-d H:i:s",strtotime("-30 days"))."'");
 $DB->exec("OPTIMIZE TABLE `pre_settle`");
@@ -30,9 +30,9 @@ showmsg('删除30天前资金明细成功！',1);
 }elseif($mod=='cleanorderi' && $_POST['do']=='submit'){
 $days = intval($_POST['days']);
 if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_order` WHERE addtime<'".date("Y-m-d H:i:s",strtotime("-{$days} days"))."'");
+\lib\OrderRetention::deleteBefore($DB,date("Y-m-d H:i:s",strtotime("-{$days} days")));
 $DB->exec("OPTIMIZE TABLE `pre_order`");
-showmsg('删除订单记录成功！',1);
+showmsg('普通订单清理完成；收款、订阅及通知凭证已保留。',1);
 }elseif($mod=='cleansettlei' && $_POST['do']=='submit'){
 $days = intval($_POST['days']);
 if($days<=0)showmsg('请确保每项不能为空',3);

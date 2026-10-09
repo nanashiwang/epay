@@ -19,3 +19,5 @@ Verified from the local checkout on 2026-09-29. This is a scoped navigation aid,
 Preserve PHP/MySQL runtime and current deployment scripts. Note checking uses Bun only on developer machines/CI; no production container changes are required.
 
 Before adding a feature, inspect adjacent flows and the current source of truth; shared filters, data definitions and access rules must not diverge across entry points.
+
+| Order evidence retention | Cron and admin order deletion/cleanup | [Shared predicate](../includes/lib/OrderRetention.php) | Existing snapshots, subscriptions, receipts and notification records | Protected orders remain available for late callbacks, purchase idempotency and reconciliation; ordinary cleanup retains original timing. |
