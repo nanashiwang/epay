@@ -12,7 +12,7 @@ do {
         $pending=$DB->getColumn('SELECT COUNT(*) FROM pre_order WHERE subchannel=:id AND status=0 AND addtime>=DATE_SUB(NOW(),INTERVAL 8 MINUTE)',[':id'=>$row['id']]);
         if ($pending || !$row['checked_at'] || time()-strtotime($row['checked_at'])>=30) $worker->poll($row);
     }
-    $notifications=$DB->getAll('SELECT O.trade_no FROM pre_order O JOIN pre_collection_account C ON C.id=O.subchannel AND C.uid=O.uid WHERE O.status=1 AND O.tid=0 AND O.notify>0 AND O.notifytime<=NOW() ORDER BY O.notifytime LIMIT 10');
+    $notifications=$DB->getAll('SELECT O.trade_no FROM pre_order O WHERE '.\lib\CollectionNotify::scope().' AND O.status=1 AND O.tid=0 AND O.notify>0 AND O.notifytime<=NOW() ORDER BY O.notifytime LIMIT 10');
     foreach($notifications?:[] as $notification) {
         try { \lib\CollectionNotify::retry($DB,$notification['trade_no']); }
         catch (Throwable $e) { fwrite(STDERR,"业务通知重试失败\n"); }

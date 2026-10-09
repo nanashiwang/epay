@@ -32,7 +32,7 @@ class bepusdt_plugin
             'appurl'  => [
                 'name' => '接口地址',
                 'type' => 'input',
-                'note' => '必须以http://或https://开头，以/结尾',
+                'note' => '使用公网 HTTPS 域名，端口 443 或 8443，以 / 结尾',
             ],
             'appkey'  => [
                 'name' => '认证Token',
@@ -61,111 +61,36 @@ class bepusdt_plugin
 
     public static function submit(): array
     {
-        global $siteurl, $channel, $order, $conf;
-
-        $parameter = [
-            'address'      => trim($channel['address']),
-            'trade_type'   => $order['typename'],
-            'order_id'     => TRADE_NO,
-            'name'         => $order['name'],
-            'timeout'      => intval($channel['timeout']),
-            'rate'         => strval($channel['rate']),
-            'amount'       => $order['realmoney'],
-            'notify_url'   => $conf['localurl'] . 'pay/notify/' . TRADE_NO . '/',
-            'redirect_url' => $siteurl . 'pay/return/' . TRADE_NO . '/',
-        ];
-
-        $parameter['signature'] = self::_toSign($parameter, $channel['appkey']);
-
-        $url  = trim($channel['appurl']) . 'api/v1/order/create-transaction';
-        $data = self::_post($url, $parameter);
-        if (!is_array($data)) {
-
-            return ['type' => 'error', 'msg' => '请求失败，请检查服务器是否能正常请求 BEpusdt 网关！'];
-        }
-
-        if ($data['status_code'] != 200) {
-
-            return ['type' => 'error', 'msg' => '请求失败，错误信息：' . $data['message']];
-        }
-
-        return ['type' => 'jump', 'url' => $data['data']['payment_url']];
+        global $DB,$order,$channel,$conf;
+        if (empty($conf['bepusdt_parent'])) return ['type'=>'error','msg'=>'BEpusdt 接入尚未完成升级，请联系管理员执行接入迁移'];
+        try { return ['type'=>'jump','url'=>(new \lib\BepusdtGateway($DB))->create($order,$channel)]; }
+        catch (\Throwable $e) { return ['type'=>'error','msg'=>'无法创建支付：'.($e instanceof \PDOException?'订单保存失败，请联系管理员':$e->getMessage())]; }
     }
+
+    public static function mapi(): array { return self::submit(); }
 
     public static function notify()
     {
-        global $channel, $order;
-
-        ob_clean();
-        header('Content-Type: plain/text; charset=utf-8');
-
-        $data = json_decode(file_get_contents('php://input'), true);
-        $sign = $data['signature'] ?? '';
-        if ($sign != self::_toSign($data, $channel['appkey'])) {
-            // 签名验证失败
-
-            exit('fail - sign error');
-        }
-
-        $out_trade_no = $data['order_id'];    // 商户订单号
-        $trade_no     = $data['trade_id'];    // BEpusdt 交易ID
-        $buyer        = mb_substr($data['buyer'], -28);
-        if ($data['status'] === 2 && $out_trade_no == TRADE_NO) {
-            processNotify($order, $trade_no, $buyer);
-
-            exit('ok');
-        }
-
-        exit('fail - status error');
-    }
-
-    public static function return(): array
-    {
-        return ['type' => 'page', 'page' => 'return'];
-    }
-
-    private static function _toSign(array $parameter, string $token): string
-    {
-        ksort($parameter);
-
-        $sign = '';
-
-        foreach ($parameter as $key => $val) {
-            if ($val == '') continue;
-            if ($key != 'signature') {
-                if ($sign != '') {
-                    $sign .= "&";
-
-                }
-
-                $sign .= "$key=$val";
+        global $DB,$order,$channel,$conf;
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: text/plain; charset=utf-8');
+        try {
+            $raw=file_get_contents('php://input',false,null,0,65537);
+            if (strlen($raw)>65536) throw new \InvalidArgumentException('payload too large');
+            $data=json_decode($raw,true,32,JSON_THROW_ON_ERROR);
+            if (!is_array($data)) throw new \InvalidArgumentException('invalid payload');
+            $snapshot=!empty($conf['bepusdt_parent'])?$DB->find('bepusdt_order','trade_no',['trade_no'=>TRADE_NO]):null;
+            if ($snapshot) (new \lib\BepusdtGateway($DB))->notify(TRADE_NO,$data);
+            else {
+                // Only administrator-owned orders created before migration may use the old contract.
+                if (!empty($channel['bepusdt_managed']) || (!empty($conf['bepusdt_parent']) && (empty($conf['bepusdt_cutover']) || $order['addtime']>=$conf['bepusdt_cutover']))) throw new \InvalidArgumentException('missing snapshot');
+                if (!\lib\BepusdtClient::verify($data,$channel['appkey']) || ($data['order_id']??null)!==TRADE_NO || ($data['status']??null)!==2 || empty($data['trade_id']) || !is_string($data['trade_id']) || \lib\BepusdtClient::decimal($data['amount']??null,2)!==\lib\BepusdtClient::decimal($order['realmoney'],2)) throw new \InvalidArgumentException('invalid legacy receipt');
+                if (!empty($channel['address']) && trim($channel['address'])!==($data['token']??null)) throw new \InvalidArgumentException('legacy address mismatch');
+                processNotify($order,$data['trade_id']);
             }
-        }
-
-        return md5($sign . $token);
+            exit('ok');
+        } catch (\Throwable $e) { http_response_code(400); exit('fail'); }
     }
 
-    private static function _post(string $url, array $json)
-    {
-
-        $header[] = 'Accept: */*';
-        $header[] = 'Accept-Language: zh-CN,zh;q=0.8';
-        $header[] = 'Connection: close';
-        $header[] = 'Content-Type: application/json';
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        $resp = curl_exec($ch);
-        curl_close($ch);
-
-        return json_decode($resp, true);
-    }
+    public static function return(): array { return ['type'=>'page','page'=>'return']; }
 }

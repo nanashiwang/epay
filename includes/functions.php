@@ -559,7 +559,7 @@ function do_notify($url){
 		return false;
 	}
 	$meta=[];
-	$o=!empty($conf['collection_parent']) ? \lib\CollectionNotify::order($DB,$url) : null;
+	$o=(!empty($conf['collection_parent']) || !empty($conf['bepusdt_parent'])) ? \lib\CollectionNotify::order($DB,$url) : null;
 	$return = $o ? \lib\CollectionNotify::transport($url,$meta) : curl_get($url,$meta);
 	if ($o) {
 		try {

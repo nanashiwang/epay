@@ -13,6 +13,7 @@ if(!$order)sysmsg('该订单号不存在，请返回来源地重新发起请求�
 if($order['status']>0){
 	sysmsg('该订单('.$order['out_trade_no'].')已完成支付，请勿重复发起支付');
 }
+$GLOBALS['platform_payment']=in_array((int)$order['tid'],[1,2,4,5],true);
 $firstGetChannel = true;
 if($order['type'] > 0 && $order['channel'] > 0 && $order['realmoney'] > 0 && $order['getmoney'] > 0){
 	$firstGetChannel = false;
@@ -61,6 +62,8 @@ if($firstGetChannel){
 	$getmoney = $order['getmoney'];
 }
 
+if (!empty($submitData['bepusdt_managed'])) $realmoney=$getmoney=$order['money'];
+
 // 判断通道单笔支付限额
 if(!empty($submitData['paymin']) && $submitData['paymin']>0 && $order['money']<$submitData['paymin']){
 	sysmsg('<center>当前支付方式单笔最小限额为'.$submitData['paymin'].'元，请选择其他支付方式！</center>', '跳转提示');
@@ -75,7 +78,7 @@ if($submitData['mode']==1 && $realmoney-$getmoney>$userrow['money']){
 
 if($firstGetChannel){
 	// 随机增减金额
-	if(empty($order['realmoney'])&&!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+	if(empty($submitData['bepusdt_managed']) && empty($order['realmoney'])&&!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
 
 	$resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
 	if($resCount == 0) sysmsg('更新订单失败，请返回重试！');

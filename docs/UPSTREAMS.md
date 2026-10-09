@@ -41,8 +41,8 @@ gh api repos/v03413/BEpusdt/releases/latest --jq '{tag_name,published_at,html_ur
 ## 本次发现
 
 - 本地已有 BEpusdt 插件，不需要新建另一套支付引擎。
-- 官方插件比本地增加了交易类型、法币选择、JSON 数值金额，以及严格签名格式和 `hash_equals` 校验。本次仅比较，未替换本地插件。
-- 网关当前 `createReq.Amount` 为 `float64`；本地插件直接将订单金额放入 JSON，在数据库返回字符串时存在类型兼容风险，需用实际请求契约测试确认。
+- 官方插件比本地增加了交易类型、法币选择、JSON 数值金额，以及严格签名格式和 `hash_equals` 校验。本地采用独立加固适配，不直接覆盖为官方插件。
+- 网关当前 `createReq.Amount` 为 `float64`；本地创建接口已按数字编码，并按 Go 数字格式生成签名；通过固定签名向量和请求契约测试核对。
 - 官方插件当前仍关闭 TLS 证书验证，且成功通知没有金额核验；同步上游不能替代本项目安全校验。
 - 网关 `EpNotify` 实际字段包括 `trade_id/order_id/amount/actual_amount/token/block_transaction_id/signature/status`；`token` 是收款地址，当前结构没有 `buyer`、网络或法币字段。回调文档示例与源码不完全一致，应锁定版本并以真实载荷验收。
 - `model.AuthToken()` 返回实例级配置，不能据此假定有商户级密钥和权限隔离。
@@ -50,4 +50,6 @@ gh api repos/v03413/BEpusdt/releases/latest --jq '{tag_name,published_at,html_ur
 
 重点跟踪：`app/handler/epusdt`、`app/task/notify`、`app/task` 扫链与确认、`app/model` 订单/钱包/汇率、`docs/api`、`docs/trade-type.md`、`docs/docker`、Release 附件和官方 PHP 插件。
 
-融合方案见[商户订阅与 BEpusdt 接入提案](../.agents/notes/proposed/architecture/2026-10-09-bepusdt-merchant-subscription.md)。
+融合方案见[商户订阅与 BEpusdt 接入决策](../.agents/notes/implemented/architecture/2026-10-09-bepusdt-merchant-subscription.md)。
+
+本地适配的稳定版契约另以 `refs/remotes/bepusdt/releases/v1.24.2` 保存；使用 `git fetch --no-tags bepusdt refs/tags/v1.24.2:refs/remotes/bepusdt/releases/v1.24.2` 获取，不创建 Epay 版本标签。运行与验收边界见 [BEpusdt 接入说明](BEPUSDT_SUBSCRIPTION.md)。

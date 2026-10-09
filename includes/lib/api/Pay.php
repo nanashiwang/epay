@@ -186,6 +186,8 @@ class Pay
             $getmoney = $oldorder['getmoney'];
         }
 
+        if (!empty($submitData['bepusdt_managed'])) $realmoney=$getmoney=$money;
+
         // 判断通道单笔支付限额
         if(!empty($submitData['paymin']) && $submitData['paymin']>0 && $money<$submitData['paymin']){
             sysmsg('<center>当前支付方式单笔最小限额为'.$submitData['paymin'].'元，请选择其他支付方式！</center>', '跳转提示');
@@ -212,7 +214,7 @@ class Pay
 
         if($firstGetChannel){
             // 随机增减金额
-            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+            if(empty($submitData['bepusdt_managed']) && !empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
 
             $resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
             if($resCount == 0) sysmsg('更新订单失败，请返回重试！');
@@ -435,6 +437,8 @@ class Pay
             $getmoney = $oldorder['getmoney'];
         }
 
+        if (!empty($submitData['bepusdt_managed'])) $realmoney=$getmoney=$money;
+
         // 判断通道单笔支付限额
         if(!empty($submitData['paymin']) && $submitData['paymin']>0 && $money<$submitData['paymin']){
             echojsonmsg('当前支付方式单笔最小限额为'.$submitData['paymin'].'元，请选择其他支付方式！');
@@ -461,7 +465,7 @@ class Pay
 
         if($firstGetChannel){
             // 随机增减金额
-            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = $realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+            if(empty($submitData['bepusdt_managed']) && !empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = $realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
 
             $resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
             if($resCount == 0) echojsonmsg('更新订单失败，请返回重试！');

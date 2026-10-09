@@ -879,6 +879,12 @@ case 'recharge':
 break;
 case 'groupinfo':
 	$gid=intval($_POST['gid']);
+	$targetGroup=$DB->find('group','*',['gid'=>$gid]);
+	if ($targetGroup && \lib\MerchantSubscription::policy($targetGroup)['enabled']) {
+		try { \lib\MerchantSubscription::available($userrow,$targetGroup); }
+		catch (Throwable $e) { exit(json_encode(['code'=>-1,'msg'=>$e->getMessage()],JSON_UNESCAPED_UNICODE)); }
+	}
+
 	$row=$DB->getRow("select * from pre_group where gid='$gid' limit 1");
 	if(!$row)
 		exit('{"code":-1,"msg":"当前会员等级不存在！"}');
@@ -890,11 +896,22 @@ case 'groupinfo':
 break;
 case 'groupbuy':
 	$gid=intval($_POST['gid']);
+	$targetGroup=$DB->find('group','*',['gid'=>$gid]);
+	if ($targetGroup && \lib\MerchantSubscription::policy($targetGroup)['enabled']) {
+		try {
+			if ($_SERVER['REQUEST_METHOD']!=='POST' || !is_string($_POST['csrf_token']??null) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'],$_POST['csrf_token'])) throw new InvalidArgumentException('页面已过期，请刷新后重试');
+			$result=\lib\MerchantSubscription::purchase($DB,$uid,$gid,(int)($_POST['num']??0),(int)($_POST['typeid']??-1),$_POST['csrf_token']);
+			exit(json_encode($result,JSON_UNESCAPED_UNICODE));
+		} catch (Throwable $e) { exit(json_encode(['code'=>-1,'msg'=>$e instanceof InvalidArgumentException?$e->getMessage():'订阅处理失败，请稍后查看订单状态'],JSON_UNESCAPED_UNICODE)); }
+	}
+
 	$row=$DB->getRow("select * from pre_group where gid='$gid' limit 1");
 	if(!$row)
 		exit('{"code":-1,"msg":"当前会员等级不存在！"}');
 	if($row['isbuy']==0)
 		exit('{"code":-1,"msg":"当前会员等级无法购买！"}');
+	$currentGroup=$DB->find('group','*',['gid'=>$userrow['gid']]);
+	if (\lib\MerchantSubscription::policy($currentGroup?:[])['enabled'] && (int)$gid!==(int)$userrow['gid'] && (!empty($userrow['endtime']) && strtotime($userrow['endtime'])>time())) exit(json_encode(['code'=>-1,'msg'=>'当前套餐仍有效，请联系管理员处理套餐切换'],JSON_UNESCAPED_UNICODE));
 	if($gid==$userrow['gid'] && $userrow['endtime']==null)exit('{"code":-1,"msg":"你已购买此会员等级，请勿重复购买"}');
 	if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
 	$money = $row['price'];

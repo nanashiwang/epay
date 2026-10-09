@@ -275,6 +275,11 @@ class Payment {
     // 订单回调处理
     static public function processOrder($isnotify, $order, $api_trade_no, $buyer = null, $bill_trade_no = null, $bill_mch_trade_no = null, $end_time = null){
         global $DB,$conf,$siteurl;
+        if (MerchantSubscription::isPurchase($order)) {
+            MerchantSubscription::settle($DB,$order['trade_no'],$api_trade_no);
+            $order=$DB->find('order','*',['trade_no'=>$order['trade_no']]);
+            if ($isnotify) return;
+        }
         if($order['status']==0 || $order['status']==4){
             if($DB->exec("UPDATE `pre_order` SET `status`=1 WHERE `trade_no`='".$order['trade_no']."' AND status IN (0,4)")){
 

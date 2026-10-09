@@ -153,6 +153,10 @@ docker-compose.yml
 
 ---
 
+## BEpusdt 商户包月接入
+
+商户可在用户中心自行配置 BEpusdt，按套餐开通 USDT / TRC20 直收。请先阅读[配置、迁移与验收说明](docs/BEPUSDT_SUBSCRIPTION.md)；升级代码不会自动开通套餐或迁移数据库。上游基线见[外部上游追踪](docs/UPSTREAMS.md)。
+
 ## 推荐插件
 
 推荐使用 **Bepusdt** 插件进行 USDT（TRC20）收款。  

@@ -161,6 +161,9 @@ $conf = array_merge($conf, $groupconfig);
 				  <?php }?>
                 </ul>
               </li>
+              <?php if(!empty($conf['bepusdt_parent'])){?>
+              <li class="<?php echo checkIfActive('bepusdt')?>"><a href="bepusdt.php"><i class="fa fa-bitcoin icon text-success"></i><span>USDT 收款</span></a></li>
+              <?php }?>
               <?php if(!empty($conf['collection_parent'])){?>
               <li class="<?php echo checkIfActive('collection')?>"><a href="collection.php"><i class="fa fa-qrcode"></i><span>收款账号</span></a></li>
               <?php }?>
@@ -206,7 +209,7 @@ $conf = array_merge($conf, $groupconfig);
 			  <li class="<?php echo checkIfActive('groupbuy')?>">
                 <a href="groupbuy.php">
                   <i class="glyphicon glyphicon-shopping-cart"></i>
-                  <span>购买会员</span>
+                  <span>我的套餐</span>
                 </a>
               </li>
 			  <?php }?>

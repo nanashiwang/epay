@@ -38,6 +38,11 @@ class Channel {
 			$owner = $DB->getColumn('SELECT uid FROM pre_collection_account WHERE id=:id', [':id'=>$id]);
 			return array_merge($channel, $accounts->config($accounts->owned($owner, $id)));
 		}
+		if (!empty($config['bepusdt_managed'])) {
+			$account=$DB->find('bepusdt_account','*',['id'=>$id]);
+			if (!$account) return null;
+			return array_merge($channel,(new BepusdtAccount($DB))->config($account));
+		}
 		if(!empty($value['info']) && !empty($config)){
 			$arr = json_decode($value['info'], true);
 			foreach($config as $configkey => $configrow){
@@ -154,6 +159,10 @@ class Channel {
 			if (!empty($GLOBALS['conf']['collection_parent']) && $channel!=0) {
 				$managed = CollectionAccount::route($DB,$uid,$typeid,$typename,$money,$money_rate);
 				if ($managed !== null) return $managed;
+			}
+			if ($channel!=0) {
+				$managed=BepusdtAccount::route($DB,$uid,$typeid,$typename,$money);
+				if ($managed!==null) return $managed;
 			}
 			if($channel==0){ //当前商户关闭该通道
 				return false;
@@ -293,6 +302,8 @@ class Channel {
 				$managed = CollectionAccount::route($DB,$uid,$typeid,$typename,$money,null);
 				if ($managed !== null) return $managed;
 			}
+			$managed=BepusdtAccount::route($DB,$uid,$typeid,$typename,$money);
+			if ($managed!==null) return $managed;
 			//未设置用户组
 			$row=$DB->getRow("SELECT id,plugin,status,rate,apptype,mode,paymin,paymax,timestart,timestop FROM pre_channel WHERE type='$typeid' AND status=1 AND daystatus=0 ORDER BY rand() LIMIT 1");
 			if($row){
@@ -368,14 +379,14 @@ class Channel {
 				}
 			}
 		}
-		if (!empty($GLOBALS['conf']['collection_parent'])) {
-			foreach ($rows as $typeRow) {
-				$id=$typeRow['id'];
-				if (isset($info[$id]) && $info[$id]['channel']==0) continue;
-				$managed=CollectionAccount::route($DB,$uid,$id,$typeRow['name'],0,$info[$id]['rate']??null);
-				if ($managed===false) unset($paytype[$id]);
-				elseif ($managed!==null) { $paytype[$id]=$typeRow; $paytype[$id]['rate']=$managed['rate']; }
-			}
+		foreach ($rows as $typeRow) {
+			$id=$typeRow['id'];
+			if (!isset($info[$id]) && !$DB->getColumn('SELECT id FROM pre_channel WHERE type=:type AND status=1 LIMIT 1',[':type'=>$id])) unset($paytype[$id]);
+			if (isset($info[$id]) && $info[$id]['channel']==0) continue;
+			$managed=BepusdtAccount::route($DB,$uid,$id,$typeRow['name'],0);
+			if ($managed===null && !empty($GLOBALS['conf']['collection_parent'])) $managed=CollectionAccount::route($DB,$uid,$id,$typeRow['name'],0,$info[$id]['rate']??null);
+			if ($managed===false) unset($paytype[$id]);
+			elseif ($managed!==null) { $paytype[$id]=$typeRow; $paytype[$id]['rate']=$managed['rate']; }
 		}
 		return $paytype;
 	}

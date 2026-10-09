@@ -171,7 +171,7 @@ final class CollectionAccount
 
     public static function route($db,$uid,$typeid,$typename,$money,$rate)
     {
-        if ($typename!=='alipay') return null;
+        if ($typename!=='alipay' || !empty($GLOBALS['platform_payment'])) return null;
         $routes=$db->getAll('SELECT account_id FROM pre_collection_route WHERE uid=:uid',[':uid'=>$uid]);
         if (!is_array($routes)) return false;
         if (!$routes) return null;

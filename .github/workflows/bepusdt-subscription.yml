@@ -1,0 +1,45 @@
+name: BEpusdt Subscription
+on:
+  push:
+    branches: [main]
+    paths: ['includes/**', 'plugins/bepusdt/**', 'user/**', 'admin/gedit.php', 'submit2.php', 'install/bepusdt.sql', 'scripts/*setup.php', 'scripts/collection-worker.php', 'tests/**', '.github/workflows/bepusdt-subscription.yml']
+  pull_request:
+    paths: ['includes/**', 'plugins/bepusdt/**', 'user/**', 'admin/gedit.php', 'submit2.php', 'install/bepusdt.sql', 'scripts/*setup.php', 'scripts/collection-worker.php', 'tests/**', '.github/workflows/bepusdt-subscription.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-password
+          MYSQL_DATABASE: epay_bepusdt_ci_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -psynthetic-test-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      EPAY_TEST_DB: epay_bepusdt_ci_test
+      EPAY_TEST_HOST: 127.0.0.1
+      EPAY_TEST_PASSWORD: synthetic-test-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, curl, openssl
+          coverage: none
+      - name: Syntax and real MySQL contracts
+        run: |
+          set -o pipefail
+          find includes/lib plugins/bepusdt scripts tests -name '*.php' -print0 | xargs -0 -n1 php -l
+          for file in user/bepusdt.php user/bepusdt_api.php user/groupbuy.php user/ajax2.php user/head.php user/collection.php admin/gedit.php submit2.php includes/functions.php; do php -l "$file"; done
+          node --check user/assets/js/bepusdt.js
+          php tests/bepusdt-subscription.php | tee /tmp/bepusdt-result
+          grep -q 'checks passed' /tmp/bepusdt-result
+          php tests/alipay-native-qr.php

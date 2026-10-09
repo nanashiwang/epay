@@ -16,13 +16,20 @@ final class CollectionNotify
         $host=$p['host']??''; $port=$p['port']??($p['scheme']==='https'?443:80);
         $ips=filter_var($host,FILTER_VALIDATE_IP)?[$host]:array_column(dns_get_record($host,DNS_A)?:[],'ip');
         if (!$ips) return false;
-        foreach($ips as $ip) if (!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) return false;
+        foreach($ips as $ip) if (!GatewayHttp::publicIp($ip)) return false;
         $body=''; $curl=curl_init($url);
-        curl_setopt_array($curl,[CURLOPT_CONNECTTIMEOUT=>3,CURLOPT_TIMEOUT=>8,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$host.':'.$port.':'.$ips[0]],CURLOPT_PROXY=>'',CURLOPT_WRITEFUNCTION=>function($ch,$chunk) use(&$body) { if (strlen($body)+strlen($chunk)>65536) return 0; $body.=$chunk; return strlen($chunk); }]);
+        curl_setopt_array($curl,[CURLOPT_PROXY=>'',CURLOPT_CONNECTTIMEOUT=>3,CURLOPT_TIMEOUT=>8,CURLOPT_SSL_VERIFYPEER=>true,CURLOPT_SSL_VERIFYHOST=>2,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_PROTOCOLS=>CURLPROTO_HTTP|CURLPROTO_HTTPS,CURLOPT_RESOLVE=>[$host.':'.$port.':'.$ips[0]],CURLOPT_PROXY=>'',CURLOPT_WRITEFUNCTION=>function($ch,$chunk) use(&$body) { if (strlen($body)+strlen($chunk)>65536) return 0; $body.=$chunk; return strlen($chunk); }]);
         $ok=curl_exec($curl);
         $meta=['http_code'=>(int)curl_getinfo($curl,CURLINFO_HTTP_CODE),'duration_ms'=>(int)round(curl_getinfo($curl,CURLINFO_TOTAL_TIME)*1000),'error'=>curl_errno($curl)];
         curl_close($curl);
         return $ok!==false?$body:false;
+    }
+
+    public static function scope()
+    {
+        $clauses=['EXISTS (SELECT 1 FROM pre_collection_account C WHERE C.id=O.subchannel AND C.uid=O.uid)'];
+        if (!empty($GLOBALS['conf']['bepusdt_parent'])) $clauses[]='EXISTS (SELECT 1 FROM pre_bepusdt_order B WHERE B.trade_no=O.trade_no AND B.uid=O.uid AND B.account_id=O.subchannel AND B.account_id>0 AND B.state=\'paid\')';
+        return '('.implode(' OR ',$clauses).')';
     }
 
     public static function retry($db,$trade,$manual=false)
@@ -30,7 +37,7 @@ final class CollectionNotify
         $lock='collection-notify:'.$trade;
         if ((int)$db->getColumn('SELECT GET_LOCK(:name,0)',[':name'=>$lock])!==1) return false;
         try {
-            $o=$db->getRow('SELECT O.* FROM pre_order O JOIN pre_collection_account C ON C.id=O.subchannel AND C.uid=O.uid WHERE O.trade_no=:trade AND O.status=1 AND O.tid=0',[':trade'=>$trade]);
+            $o=$db->getRow('SELECT O.* FROM pre_order O WHERE '.self::scope().' AND O.trade_no=:trade AND O.status=1 AND O.tid=0',[':trade'=>$trade]);
             if (!$o) return false;
             if (!$manual && ((int)$o['notify']<=0 || strtotime($o['notifytime'])>time())) return false;
             $attempt=(int)$o['notify'];
@@ -47,7 +54,7 @@ final class CollectionNotify
     {
         parse_str((string)parse_url($url,PHP_URL_QUERY),$query);
         if (empty($query['trade_no']) || !is_string($query['trade_no']) || !preg_match('/\A[0-9]{10,32}\z/D',$query['trade_no'])) return null;
-        return $db->getRow('SELECT O.trade_no,O.uid,O.notify_url FROM pre_order O JOIN pre_collection_account A ON A.id=O.subchannel AND A.uid=O.uid WHERE O.trade_no=:trade',[':trade'=>$query['trade_no']]);
+        return $db->getRow('SELECT O.trade_no,O.uid,O.notify_url FROM pre_order O WHERE '.self::scope().' AND O.trade_no=:trade',[':trade'=>$query['trade_no']]);
     }
 
     public static function record($db,array $order,array $meta,$body,$success)

@@ -1,7 +1,7 @@
 <?php
 include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
-$title='购买会员';
+$title='我的套餐';
 include './head.php';
 ?>
 <style>
@@ -39,7 +39,9 @@ function display_info($info){
 
 $urow = $DB->getRow("SELECT uid,gid FROM pre_user WHERE uid='{$conf['reg_pay_uid']}' limit 1");
 if(!$urow)exit('购买会员收款商户不存在');
+$GLOBALS['platform_payment']=true;
 $paytypem = \lib\Channel::getTypes($urow['uid'], $urow['gid']);
+unset($GLOBALS['platform_payment']);
 
 $list = $DB->getAll("SELECT * FROM pre_group WHERE isbuy=1 ORDER BY SORT ASC");
 $group=[];
@@ -51,14 +53,14 @@ $_SESSION['csrf_token'] = $csrf_token;
 
 $mygroup = $DB->getRow("SELECT * FROM pre_group WHERE gid='{$userrow['gid']}'");
 $mygroupname = $mygroup['name'] ? $mygroup['name'] : '默认用户组';
-$gexpire = $userrow['endtime'] ? date("Y-m-d", strtotime($userrow['endtime'])) : '永久';
+$gexpire = $userrow['endtime'] ? date("Y-m-d H:i:s", strtotime($userrow['endtime'])) : '永久';
 if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript:buy('.$userrow['gid'].',1)">续期</a>]';
 ?>
  <div id="content" class="app-content" role="main">
     <div class="app-content-body ">
 
 <div class="bg-light lter b-b wrapper-md hidden-print">
-  <h1 class="m-n font-thin h3">购买会员</h1>
+  <h1 class="m-n font-thin h3">我的套餐</h1>
 </div>
 <div class="wrapper-md control">
 <?php if(isset($msg)){?>
@@ -70,14 +72,16 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
 	<div class="col-xs-12">
 
 	<?php if(isset($_GET['ok']) && $_GET['ok']==1){
-	$order_param = $DB->getColumn("SELECT `param` FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$_GET['trade_no']]);
-	if($order_param){
+	$paidOrder = $DB->getRow("SELECT param,status FROM pre_order WHERE trade_no=:trade_no AND tid=4 LIMIT 1", [':trade_no'=>(string)$_GET['trade_no']]);
+	$order_param=$paidOrder['param']??null;
+	$paidOwner=json_decode($order_param?:'{}',true);
+	if($order_param && (int)$paidOrder['status']===1 && (int)($paidOwner['uid']??0)===(int)$uid){
 		$order_param = json_decode($order_param, true);
 		$groupname = $DB->getColumn("SELECT name FROM pre_group WHERE gid=:gid", [':gid'=>$order_param['gid']]);
 	?>
 	<div class="alert alert-success alert-dismissible" role="alert">
 	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	  会员等级 <b><?php echo $groupname?></b> 购买成功！
+	  套餐 <b><?php echo htmlspecialchars($groupname,ENT_QUOTES,'UTF-8')?></b> 付款已确认，请以当前有效期和下方订阅记录为准。
 	</div>
 	<?php }}?>
 
@@ -92,7 +96,16 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
 		<div class="list-group-item">
 		  <b>到期时间：</b><font color="green"><?php echo $gexpire?></font>
 		</div>
-		<div class="line line-dashed b-b line-lg pull-in"></div>
+		<?php if (!empty($conf['bepusdt_parent'])) {
+    $entitlement=\lib\MerchantSubscription::policy($mygroup?:[]);
+    ?><div class="list-group-item"><b>USDT 自助收款：</b><?php echo $entitlement['enabled'] && $userrow['endtime'] && strtotime($userrow['endtime'])>time()?'有效，最多 '.$entitlement['limit'].' 个账号':'未开通或已到期'; ?>。按自然月预付续期，月末按目标月份最后一天计算，不自动扣款。<a href="bepusdt.php">管理收款账号</a></div>
+    <details class="list-group-item"><summary>最近 20 笔套餐付款与权益记录</summary><div class="table-responsive"><table class="table"><thead><tr><th>订单 / 时间</th><th>金额 / 月数</th><th>状态</th><th>原到期 / 新到期</th></tr></thead><tbody>
+    <?php $events=$DB->getAll('SELECT P.trade_no,P.created_at,O.money,O.status,O.param,E.months,E.state,E.old_endtime,E.new_endtime FROM pre_subscription_purchase P JOIN pre_order O ON O.trade_no=P.trade_no LEFT JOIN pre_subscription_event E ON E.trade_no=P.trade_no WHERE P.uid=:uid ORDER BY P.created_at DESC LIMIT 20',[':uid'=>$uid]);
+    foreach ($events?:[] as $event) { ?>
+    <tr><td><?php echo htmlspecialchars($event['trade_no'].' / '.$event['created_at'],ENT_QUOTES,'UTF-8'); ?></td><td>¥<?php echo htmlspecialchars($event['money'],ENT_QUOTES,'UTF-8'); ?> / <?php echo (int)($event['months']??(json_decode($event['param'],true)['months']??0)); ?></td><td><?php echo $event['state']==='applied'?'已生效':($event['state']==='review'?'已付款，套餐变更待管理员处理':((int)$event['status']===1?'已付款':'待付款')); ?></td><td><?php echo htmlspecialchars(($event['old_endtime']?:'—').' / '.($event['new_endtime']?:'—'),ENT_QUOTES,'UTF-8'); ?></td></tr>
+    <?php } if (!$events) echo '<tr><td colspan="4">暂无套餐记录</td></tr>'; ?></tbody></table></div></details>
+<?php } ?>
+        <div class="line line-dashed b-b line-lg pull-in"></div>
         <table class="table table-striped table-hover">
           <thead><tr><th>会员等级</th><th>可用支付通道及费率</th><th>售价</th><th>操作</th></tr></thead>
           <tbody>
@@ -102,7 +115,7 @@ foreach($list as $res){
 		$visible = explode(',',$res['visible']);
 		if(!in_array($userrow['gid'], $visible))continue;
 	}
-	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.display_info($res['info']).'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
+	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.display_info($res['info']).(\lib\MerchantSubscription::policy($res)['enabled']?'<p class="text-success">USDT / TRC20 自助直收 · 零订单服务费 · 最多 '.\lib\MerchantSubscription::policy($res)['limit'].' 个账号</p>':'').'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
 }
 ?>
 		  </tbody>
@@ -116,7 +129,7 @@ foreach($list as $res){
 	<button class="btn btn-default btn-block" onclick="back()"><i class="fa fa-reply"></i>&nbsp;返回列表</button>
 	<div class="panel panel-default">
 		<div class="panel-heading font-bold">
-			<i class="fa fa-shopping-cart"></i>&nbsp;<span id="buy_title">购买会员</span>
+			<i class="fa fa-shopping-cart"></i>&nbsp;<span id="buy_title">我的套餐</span>
 		</div>
 		<div class="panel-body">
         <form class="form-horizontal devform">
