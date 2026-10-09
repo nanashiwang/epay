@@ -3,3 +3,10 @@
 @media(prefers-color-scheme:dark){.collection{color:#dae3f0;background:#142133;min-height:calc(100vh - 100px)}.collection p,.collection-card dt{color:#a5b2c5}.collection-card,.collection-empty,.collection-table,.collection-dialog{background:#1d293b;color:#dae3f0;border-color:#37465b}.collection-notice{background:#1e3550;border-color:#304e6e;color:#cbdced}.collection-stats strong{color:#e8edf5}.collection input,.collection select,.collection textarea{background:#172335;color:#e2e9f2;border-color:#475971}.collection-table th{background:#263449;color:#becbdd}.collection-table td,.collection-actions{border-color:#37465b}.collection-badge{background:#36455c;color:#d2dfef}.collection-tabs{border-color:#41516a}.collection-tabs button{color:#aebdd0}.collection-tabs button.selected{color:#7dbeff}.collection .btn-default{background:#293b53;border-color:#53637b;color:#e0e8f4!important}.collection .collection-help{color:#9fb0c9}.collection-dialog .collection-notice{color:#cbdced}.collection-notice.good{background:#1b3c31;color:#a9dfc5}}
 
 .collection a.btn-primary{color:#fff}
+/* Merchant payment configuration shares the existing account console. */
+.collection-dialog select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#172033}
+.collection-dialog .mc-mode{display:flex;align-items:center;gap:8px;font-weight:400}
+.collection-dialog .mc-mode input{width:auto;margin:0}
+.collection-dialog fieldset{border:0;padding:0;margin:12px 0}
+.collection-dialog legend{font-size:14px;font-weight:600;margin:0 0 8px}
+@media(prefers-color-scheme:dark){.collection-dialog select{background:#172033;color:#e2e8f0;border-color:#475569}}

@@ -17,7 +17,7 @@ try {
     switch ($act) {
         case 'list':
             [$u,$g,$policy]=\lib\MerchantSubscription::current($DB,$uid);
-            bepusdt_reply(['code'=>0,'data'=>$svc->listing($uid),'subscription'=>['name'=>$g['name']??'默认套餐','endtime'=>$u['endtime'],'active'=>$policy['active'],'limit'=>$policy['limit']]]);
+            bepusdt_reply(['code'=>0,'data'=>$svc->listing($uid),'subscription'=>['name'=>$g['name']??'默认套餐','endtime'=>$u['endtime'],'active'=>$policy['active'],'limit'=>$policy['limit'],'self_service'=>$policy['self_service'],'used'=>$policy['self_service']?\lib\MerchantChannel::count($DB,$uid):count($svc->listing($uid))]]);
         case 'save':
             $id=$svc->save($uid,$_POST,(int)$conf['bepusdt_parent']);
             bepusdt_reply(['code'=>0,'id'=>$id,'msg'=>'配置已保存，请校验接口并测试到账']);

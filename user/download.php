@@ -238,6 +238,7 @@ case 'wximg':
 	if(!checkRefererHost())exit();
 	$channelid = intval($_GET['channel']);
 	$subchannelid = intval($_GET['subchannel']);
+    if ($subchannelid && !$DB->find('subchannel','id',['id'=>$subchannelid,'uid'=>$uid])) { http_response_code(403); exit('通道不存在'); }
 	$media_id = $_GET['mediaid'];
 	$channel = $subchannelid ? \lib\Channel::getSub($subchannelid) : \lib\Channel::get($channelid);
 	$model = \lib\Complain\CommUtil::getModel($channel);

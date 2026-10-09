@@ -36,7 +36,7 @@ $direct = '0';
 $checktype = check_paytype();
 $type = isset($_GET['type'])?trim($_GET['type']):$checktype;
 if($type){
-    if((isset($_GET['code']) || isset($_GET['auth_code']) || isset($_GET['userAuthCode'])) && $_SESSION['paypage_channel']){
+    if(!\lib\MerchantChannel::selfService($DB,$uid) && (isset($_GET['code']) || isset($_GET['auth_code']) || isset($_GET['userAuthCode'])) && $_SESSION['paypage_channel']){
         $submitData = \lib\Channel::info($_SESSION['paypage_channel'], $userrow['gid']);
         if($_SESSION['paypage_subchannel'] > 0) $submitData['subchannel'] = $_SESSION['paypage_subchannel'];
     }else{

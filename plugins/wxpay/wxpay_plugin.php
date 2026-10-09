@@ -418,6 +418,7 @@ class wxpay_plugin
 		try{
 			$client = new \WeChatPay\PaymentService($wechatpay_config);
 			$data = $client->notify();
+            if (!empty($channel['merchant_managed'])) \lib\MerchantChannel::receipt($data,$channel,$order);
 			if($data['out_trade_no'] == TRADE_NO && $data['total_fee']==strval($order['realmoney']*100)){
 				processNotify($order, $data['transaction_id'], $data['openid']);
 			}

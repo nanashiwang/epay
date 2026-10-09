@@ -12,18 +12,18 @@ final class GatewaySecrets
         if ($key===false || strlen($key)!==32) throw new \RuntimeException('收款加密服务尚未配置');
         return $key;
     }
-    public static function encrypt(array $data,$uid)
+    public static function encrypt(array $data,$uid,$purpose='bepusdt')
     {
         $iv=random_bytes(12);
-        $encrypted=openssl_encrypt(json_encode($data,JSON_THROW_ON_ERROR),'aes-256-gcm',self::key(),OPENSSL_RAW_DATA,$iv,$tag,'bepusdt:'.$uid);
+        $encrypted=openssl_encrypt(json_encode($data,JSON_THROW_ON_ERROR),'aes-256-gcm',self::key(),OPENSSL_RAW_DATA,$iv,$tag,$purpose.':'.$uid);
         if ($encrypted===false) throw new \RuntimeException('收款配置加密失败');
         return base64_encode($iv.$tag.$encrypted);
     }
-    public static function decrypt($value,$uid)
+    public static function decrypt($value,$uid,$purpose='bepusdt')
     {
         $bytes=base64_decode($value,true);
         if ($bytes===false || strlen($bytes)<29) throw new \RuntimeException('收款配置不可读取');
-        $plain=openssl_decrypt(substr($bytes,28),'aes-256-gcm',self::key(),OPENSSL_RAW_DATA,substr($bytes,0,12),substr($bytes,12,16),'bepusdt:'.$uid);
+        $plain=openssl_decrypt(substr($bytes,28),'aes-256-gcm',self::key(),OPENSSL_RAW_DATA,substr($bytes,0,12),substr($bytes,12,16),$purpose.':'.$uid);
         if ($plain===false) throw new \RuntimeException('收款配置不可读取');
         return json_decode($plain,true,64,JSON_THROW_ON_ERROR);
     }

@@ -209,8 +209,8 @@ class BaseService
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $second);
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, !empty($GLOBALS['channel']['merchant_managed']));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, !empty($GLOBALS['channel']['merchant_managed'])?2:0);
         curl_setopt($ch, CURLOPT_USERAGENT, $ua);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -659,6 +659,7 @@ class alipay_plugin
 		$verify_result = $aop->check($_POST);
 
 		if($verify_result) {//验证成功
+            if (!empty($channel['merchant_managed'])) \lib\MerchantChannel::receipt($_POST,$channel,$order);
 			//商户订单号
 			$out_trade_no = $_POST['out_trade_no'];
 
@@ -691,6 +692,7 @@ class alipay_plugin
 	//同步回调
 	static public function return(){
 		global $channel, $order;
+        if (!empty($channel['merchant_managed'])) return ['type'=>'page','page'=>'return'];
 
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);

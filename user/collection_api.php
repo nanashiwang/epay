@@ -15,7 +15,13 @@ try {
     }
     $id=(int)($_POST['id']??0);
     switch($act) {
-        case 'list': collection_reply(['code'=>0,'data'=>$svc->listing($uid)]);
+        case 'list':
+            $subscription=null;
+            if (\lib\MerchantChannel::selfService($DB,$uid)) {
+                [$u,$g,$p]=\lib\MerchantSubscription::current($DB,$uid);
+                $subscription=['active'=>$p['active'] && \lib\MerchantChannel::installed(),'limit'=>$p['limit'],'endtime'=>$u['endtime'],'used'=>\lib\MerchantChannel::installed()?\lib\MerchantChannel::count($DB,$uid):0];
+            }
+            collection_reply(['code'=>0,'data'=>$svc->listing($uid),'subscription'=>$subscription]);
         case 'save':
             $id=$svc->save($uid,$_POST,(int)$conf['collection_parent']);
             collection_reply(['code'=>0,'id'=>$id,'msg'=>'已保存，请校验接口后启用监测']);
@@ -39,6 +45,7 @@ try {
             if (!$decoded) throw new InvalidArgumentException('未识别到二维码，请裁剪二维码区域或粘贴原生码地址');
             collection_reply(['code'=>0,'url'=>AlipayCodeNativeQr::codeUrl($decoded)]);
         case 'test':
+            if (\lib\MerchantChannel::selfService($DB,$uid)) \lib\MerchantChannel::quota($DB,$uid,true);
             $r=$svc->owned($uid,$id);
             if ((int)$userrow['pay']!==1 || (!empty($conf['cert_force']) && !$userrow['cert'])) throw new InvalidArgumentException('请先完成商户审核及实名认证');
             if ($r['status']!=1 || \lib\CollectionAccount::health($r,time())!=='在线') throw new InvalidArgumentException('请等待已启用账号的监测状态变为在线');

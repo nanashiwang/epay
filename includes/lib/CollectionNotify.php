@@ -29,6 +29,7 @@ final class CollectionNotify
     {
         $clauses=['EXISTS (SELECT 1 FROM pre_collection_account C WHERE C.id=O.subchannel AND C.uid=O.uid)'];
         if (!empty($GLOBALS['conf']['bepusdt_parent'])) $clauses[]='EXISTS (SELECT 1 FROM pre_bepusdt_order B WHERE B.trade_no=O.trade_no AND B.uid=O.uid AND B.account_id=O.subchannel AND B.account_id>0 AND B.state=\'paid\')';
+        if (MerchantChannel::installed()) $clauses[]='EXISTS (SELECT 1 FROM pre_merchant_channel_order M WHERE M.trade_no=O.trade_no AND M.uid=O.uid AND M.account_id=O.subchannel AND M.paid_at IS NOT NULL)';
         return '('.implode(' OR ',$clauses).')';
     }
 

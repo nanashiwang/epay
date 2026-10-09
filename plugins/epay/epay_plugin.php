@@ -239,6 +239,7 @@ class epay_plugin
 		$verify_result = $epayNotify->verifyNotify();
 
 		if($verify_result) {//验证成功
+            if (!empty($channel['merchant_managed'])) \lib\MerchantChannel::receipt($_GET,$channel,$order);
 			//商户订单号
 			$out_trade_no = $_GET['out_trade_no'];
 
@@ -264,6 +265,7 @@ class epay_plugin
 	//同步回调
 	static public function return(){
 		global $channel, $order;
+        if (!empty($channel['merchant_managed'])) return ['type'=>'page','page'=>'return'];
 
 		require(PAY_ROOT."inc/epay.config.php");
 		require(PAY_ROOT."inc/EpayCore.class.php");

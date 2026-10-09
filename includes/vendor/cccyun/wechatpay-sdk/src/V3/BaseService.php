@@ -55,6 +55,7 @@ class BaseService
     private $isGlobal = false;
 
     private $download_cert = false;
+    private $inlineKeys = false;
 
 	/**
 	 * @param array $config 微信支付配置信息
@@ -73,6 +74,16 @@ class BaseService
         }
         if (strlen($config['apikey']) != 32) {
             throw new \InvalidArgumentException("无效的商户APIv3密钥");
+        }
+        if (isset($config['merchantPrivateKey'], $config['platformPublicKey'])) {
+            $this->inlineKeys=true;
+            $this->appId=$config['appid']; $this->mchId=$config['mchid']; $this->apiKey=$config['apikey'];
+            $this->merchantCertificateSerial=$config['merchantCertificateSerial'];
+            $this->platformCertificateSerial=$config['platformCertificateSerial'];
+            $this->merchantPrivateKeyInstance=openssl_pkey_get_private($config['merchantPrivateKey']);
+            $this->platformPublicKeyInstance=openssl_pkey_get_public($config['platformPublicKey']);
+            if (!$this->merchantPrivateKeyInstance || !$this->platformPublicKeyInstance || !$this->merchantCertificateSerial || !$this->platformCertificateSerial) throw new \InvalidArgumentException('支付密钥或序列号无效');
+            return;
         }
         if (empty($config['merchantPrivateKeyFilePath'])) {
             throw new \InvalidArgumentException("商户API私钥路径不能为空");
@@ -147,6 +158,7 @@ class BaseService
      */
     private function loadPlatformCertificate()
     {
+        if ($this->inlineKeys) throw new Exception('微信支付公钥 ID 不匹配，请检查商户配置');
         if (file_exists($this->platformCertificateFilePath)) {
             $certificate = file_get_contents($this->platformCertificateFilePath);
             $this->platformPublicKeyInstance = openssl_pkey_get_public($certificate);
@@ -548,8 +560,8 @@ class BaseService
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, !empty($GLOBALS['channel']['merchant_managed']));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, !empty($GLOBALS['channel']['merchant_managed'])?2:0);
         curl_setopt($ch, CURLOPT_USERAGENT, $ua);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

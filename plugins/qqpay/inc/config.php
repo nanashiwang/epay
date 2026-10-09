@@ -24,6 +24,11 @@ $qqpay_config = [
 	'sslkey_path' => PLUGIN_ROOT.$channel['plugin'].'/cert/apiclient_key.pem',
 ];
 
+if (!empty($channel['merchant_managed'])) {
+    $qqpay_config['sslcert_path']=''; $qqpay_config['sslkey_path']='';
+    return $qqpay_config;
+}
+
 if(file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/apiclient_cert.pem') && file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/apiclient_key.pem')){
 	$qqpay_config['sslcert_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/apiclient_cert.pem';
 	$qqpay_config['sslkey_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/apiclient_key.pem';

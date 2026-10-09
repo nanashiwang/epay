@@ -275,6 +275,11 @@ class Payment {
     // 订单回调处理
     static public function processOrder($isnotify, $order, $api_trade_no, $buyer = null, $bill_trade_no = null, $bill_mch_trade_no = null, $end_time = null){
         global $DB,$conf,$siteurl;
+        if (MerchantChannel::isOrder($DB,$order)) {
+            MerchantChannel::settle($DB,$order,$api_trade_no,$buyer);
+            $order=$DB->find('order','*',['trade_no'=>$order['trade_no']]);
+            if ($isnotify) return;
+        }
         if (MerchantSubscription::isPurchase($order)) {
             MerchantSubscription::settle($DB,$order['trade_no'],$api_trade_no);
             $order=$DB->find('order','*',['trade_no'=>$order['trade_no']]);
@@ -370,6 +375,7 @@ class Payment {
     // 更新订单分账接收人
     static public function updateOrderProfits($order, $plugin){
         global $DB;
+        if (MerchantChannel::isOrder($DB,$order)) return 0;
         $support_plugins = \lib\ProfitSharing\CommUtil::$plugins;
         if(in_array($plugin, $support_plugins)){
             $psreceiver = null;

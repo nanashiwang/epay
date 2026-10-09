@@ -27,6 +27,7 @@ final class BepusdtAccount
         if ($timeout<120 || $timeout>3600) throw new \InvalidArgumentException('付款窗口须为 120–3600 秒');
         return DbTransaction::run($this->db,function() use($uid,$input,$parent,$id,$name,$endpoint,$address,$timeout) {
             $policy=MerchantSubscription::requireActive($this->db,$uid,true);
+            if ($policy['self_service']) MerchantChannel::quota($this->db,$uid,false,$id?0:1);
             $old=$id?$this->owned($uid,$id,true):null;
             if ($old && (int)$old['status']!==0) throw new \InvalidArgumentException('请先停用账号再编辑');
             $token=trim((string)($input['token']??''));
@@ -68,6 +69,7 @@ final class BepusdtAccount
             $r=$this->owned($uid,$id,true);
             if (in_array($action,['enable','default'],true)) {
                 $policy=MerchantSubscription::requireActive($this->db,$uid);
+                if ($policy['self_service']) MerchantChannel::quota($this->db,$uid,true,$action==='enable' && !$r['status']?1:0);
                 if (!$r['verified_at'] || !$r['tested_at']) throw new \InvalidArgumentException('请先通过接口校验和测试订单到账验收');
                 $enabled=$this->db->getColumn('SELECT COUNT(*) FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id WHERE A.uid=:uid AND A.deleted_at IS NULL AND S.status=1 AND A.id<>:id',[':uid'=>$uid,':id'=>$id]);
                 if ($enabled>=$policy['limit']) throw new \InvalidArgumentException('已达到套餐启用账号数量，请先停用其它账号');
@@ -97,6 +99,7 @@ final class BepusdtAccount
             $r=(new self($db))->owned($uid,$route['account_id']);
             $enabled=$db->getColumn('SELECT COUNT(*) FROM pre_bepusdt_account A JOIN pre_subchannel S ON S.id=A.id WHERE A.uid=:uid AND A.deleted_at IS NULL AND S.status=1',[':uid'=>$uid]);
             if ((int)$r['status']!==1 || !$r['verified_at'] || !$r['tested_at'] || $enabled>$policy['limit']) return false;
+            if ($policy['self_service']) MerchantChannel::quota($db,$uid,true);
             $p=$db->getRow('SELECT C.*,T.status type_status FROM pre_channel C JOIN pre_type T ON T.id=C.type WHERE C.id=:id',[':id'=>$r['channel']]);
             if (!$p || (int)$p['type_status']!==1 || $p['plugin']!=='bepusdt' || (int)$p['mode']!==1 || (int)$p['type']!==(int)$type || !empty($p['daystatus']) || $name!=='usdt.trc20' || (int)$p['status']!==0 || (json_decode($p['config'],true)['bepusdt_managed']??null)!==1) return false;
             if ($money>0 && ((!empty($p['paymin']) && $money<$p['paymin']) || (!empty($p['paymax']) && $money>$p['paymax']))) return false;

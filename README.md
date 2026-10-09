@@ -153,6 +153,10 @@ docker-compose.yml
 
 ---
 
+## 商户包月与自配支付通道
+
+商户购买包月服务后，可自行配置支付宝、微信、QQ、易支付兼容网关、支付宝收款码及 BEpusdt。管理员管理套餐与平台月费收款，无需为每位商户录入收款密钥。具体支持模式、显式迁移步骤和权限边界见[商户支付通道说明](docs/MERCHANT_CHANNELS.md)。
+
 ## BEpusdt 商户包月接入
 
 商户可在用户中心自行配置 BEpusdt，按套餐开通 USDT / TRC20 直收。请先阅读[配置、迁移与验收说明](docs/BEPUSDT_SUBSCRIPTION.md)；升级代码不会自动开通套餐或迁移数据库。上游基线见[外部上游追踪](docs/UPSTREAMS.md)。
@@ -166,4 +170,3 @@ Bepusdt 是适用于彩虹易支付系统的 USDT 收款插件，收到的货币
 🔗 [https://github.com/v03413/bepusdt](https://github.com/v03413/bepusdt)
 
 ---
-

@@ -161,11 +161,12 @@ $conf = array_merge($conf, $groupconfig);
 				  <?php }?>
                 </ul>
               </li>
+              <?php if(!empty($conf['merchant_channels'])){?><li class="<?php echo checkIfActive('channels')?>"><a href="channels.php"><i class="fa fa-credit-card"></i><span>支付通道</span></a></li><?php } ?>
               <?php if(!empty($conf['bepusdt_parent'])){?>
               <li class="<?php echo checkIfActive('bepusdt')?>"><a href="bepusdt.php"><i class="fa fa-bitcoin icon text-success"></i><span>USDT 收款</span></a></li>
               <?php }?>
               <?php if(!empty($conf['collection_parent'])){?>
-              <li class="<?php echo checkIfActive('collection')?>"><a href="collection.php"><i class="fa fa-qrcode"></i><span>收款账号</span></a></li>
+              <li class="<?php echo checkIfActive('collection')?>"><a href="collection.php"><i class="fa fa-qrcode"></i><span>支付宝收款码</span></a></li>
               <?php }?>
               <li class="line dk"></li>
               <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">

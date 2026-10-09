@@ -28,16 +28,22 @@ class Channel {
 
 	static public function getSub($id){
 		global $DB;
-		$value=$DB->getRow("SELECT A.*,B.info,B.id subid,B.name subname FROM pre_subchannel B INNER JOIN pre_channel A ON B.channel=A.id WHERE B.id='$id'");
+		$value=$DB->getRow("SELECT A.*,B.info,B.id subid,B.name subname,B.uid subuid FROM pre_subchannel B INNER JOIN pre_channel A ON B.channel=A.id WHERE B.id='$id'");
 		if(!$value) return null;
 		$channel = ['id'=>$value['id'], 'subid'=>$value['subid'], 'name'=>$value['name'], 'subname'=>$value['subname'], 'mode'=>$value['mode'], 'type'=>$value['type'], 'plugin'=>$value['plugin'], 'apptype'=>$value['apptype'], 'appwxmp'=>$value['appwxmp'], 'appwxa'=>$value['appwxa'], 'costrate'=>$value['costrate'], 'daytop'=>$value['daytop'], 'daymaxorder'=>$value['daymaxorder']];
 
 		$config = json_decode($value['config'], true);
+		if (!empty($config['merchant_managed'])) {
+            $account=$DB->find('merchant_channel_account','*',['id'=>$id]);
+            if (!$account || (int)$account['uid']!==(int)$value['subuid']) return false;
+            $config=(new MerchantChannel($DB))->config(array_merge($account,['channel'=>$value['id'],'name'=>$value['subname']]));
+        }
 		if (!empty($config['collection_managed'])) {
 			$accounts = new CollectionAccount($DB);
 			$owner = $DB->getColumn('SELECT uid FROM pre_collection_account WHERE id=:id', [':id'=>$id]);
 			return array_merge($channel, $accounts->config($accounts->owned($owner, $id)));
 		}
+        if (!empty($config['merchant_managed'])) return array_merge($channel,$config);
 		if (!empty($config['bepusdt_managed'])) {
 			$account=$DB->find('bepusdt_account','*',['id'=>$id]);
 			if (!$account) return null;
@@ -143,6 +149,9 @@ class Channel {
 	//获取通道、插件、费率信息
 	static public function getSubmitInfo($typeid, $typename, $uid, $gid, $money, $sub_mch_id=0){
 		global $DB;
+		$managed=MerchantChannel::route($DB,$uid,$typeid,$typename,$money);
+        if ($managed!==null) return $managed;
+
 		if($gid>0)$groupinfo=$DB->getColumn("SELECT info FROM pre_group WHERE gid='$gid' LIMIT 1");
 		if(!$groupinfo)$groupinfo=$DB->getColumn("SELECT info FROM pre_group WHERE gid=0 LIMIT 1");
 		if($groupinfo){
@@ -164,6 +173,7 @@ class Channel {
 				$managed=BepusdtAccount::route($DB,$uid,$typeid,$typename,$money);
 				if ($managed!==null) return $managed;
 			}
+            if (empty($GLOBALS['platform_payment']) && MerchantChannel::selfService($DB,$uid)) return false;
 			if($channel==0){ //当前商户关闭该通道
 				return false;
 			}
@@ -304,6 +314,7 @@ class Channel {
 			}
 			$managed=BepusdtAccount::route($DB,$uid,$typeid,$typename,$money);
 			if ($managed!==null) return $managed;
+            if (empty($GLOBALS['platform_payment']) && MerchantChannel::selfService($DB,$uid)) return false;
 			//未设置用户组
 			$row=$DB->getRow("SELECT id,plugin,status,rate,apptype,mode,paymin,paymax,timestart,timestop FROM pre_channel WHERE type='$typeid' AND status=1 AND daystatus=0 ORDER BY rand() LIMIT 1");
 			if($row){
@@ -383,8 +394,10 @@ class Channel {
 			$id=$typeRow['id'];
 			if (!isset($info[$id]) && !$DB->getColumn('SELECT id FROM pre_channel WHERE type=:type AND status=1 LIMIT 1',[':type'=>$id])) unset($paytype[$id]);
 			if (isset($info[$id]) && $info[$id]['channel']==0) continue;
-			$managed=BepusdtAccount::route($DB,$uid,$id,$typeRow['name'],0);
+			$managed=MerchantChannel::route($DB,$uid,$id,$typeRow['name'],0);
+            if ($managed===null) $managed=BepusdtAccount::route($DB,$uid,$id,$typeRow['name'],0);
 			if ($managed===null && !empty($GLOBALS['conf']['collection_parent'])) $managed=CollectionAccount::route($DB,$uid,$id,$typeRow['name'],0,$info[$id]['rate']??null);
+            if ($managed===null && empty($GLOBALS['platform_payment']) && MerchantChannel::selfService($DB,$uid)) $managed=false;
 			if ($managed===false) unset($paytype[$id]);
 			elseif ($managed!==null) { $paytype[$id]=$typeRow; $paytype[$id]['rate']=$managed['rate']; }
 		}

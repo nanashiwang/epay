@@ -159,6 +159,7 @@ case 'getSubChannels':
 break;
 case 'setChannel':
 	$id=intval($_GET['id']);
+    if (!empty($conf['merchant_channels']) && $DB->find('merchant_channel_template','channel',['channel'=>$id])) exit(json_encode(['code'=>-1,'msg'=>'此为系统自助收款模板，请在支付方式或套餐中管理可用范围，商户自行配置账号'],JSON_UNESCAPED_UNICODE));
 	$status=intval($_GET['status']);
 	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
 	if(!$row)
@@ -175,6 +176,7 @@ case 'setChannel':
 break;
 case 'delChannel':
 	$id=intval($_GET['id']);
+    if (!empty($conf['merchant_channels']) && $DB->find('merchant_channel_template','channel',['channel'=>$id])) exit(json_encode(['code'=>-1,'msg'=>'此为系统自助收款模板，请在支付方式或套餐中管理可用范围，商户自行配置账号'],JSON_UNESCAPED_UNICODE));
 	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
@@ -226,6 +228,7 @@ case 'saveChannel':
 		else exit('{"code":-1,"msg":"新增支付通道失败['.$DB->error().']"}');
 	}elseif($_POST['action'] == 'copy'){
 		$id=intval($_POST['id']);
+    if (!empty($conf['merchant_channels']) && $DB->find('merchant_channel_template','channel',['channel'=>$id])) exit(json_encode(['code'=>-1,'msg'=>'此为系统自助收款模板，请在支付方式或套餐中管理可用范围，商户自行配置账号'],JSON_UNESCAPED_UNICODE));
 		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
 		if(!$row) exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 		$name=trim($_POST['name']);
@@ -260,6 +263,7 @@ case 'saveChannel':
 		else exit('{"code":-1,"msg":"复制支付通道失败['.$DB->error().']"}');
 	}elseif($_POST['action'] == 'edit'){
 		$id=intval($_POST['id']);
+        if (!empty($conf['merchant_channels']) && $DB->find('merchant_channel_template','channel',['channel'=>$id])) exit(json_encode(['code'=>-1,'msg'=>'系统自助收款模板不可编辑，请在支付方式或套餐中管理可用范围'],JSON_UNESCAPED_UNICODE));
 		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
 		if(!$row) exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 		$name=trim($_POST['name']);
@@ -373,6 +377,7 @@ case 'channelInfo':
 break;
 case 'saveChannelInfo':
 	$id=intval($_GET['id']);
+    if (!empty($conf['merchant_channels']) && $DB->find('merchant_channel_template','channel',['channel'=>$id])) exit(json_encode(['code'=>-1,'msg'=>'系统模板不保存商户密钥，请由商户在支付通道中配置'],JSON_UNESCAPED_UNICODE));
 	$config=isset($_POST['config'])?$_POST['config']:null;
 	$appwxmp=isset($_POST['appwxmp'])?intval($_POST['appwxmp']):null;
 	$appwxa=isset($_POST['appwxa'])?intval($_POST['appwxa']):null;

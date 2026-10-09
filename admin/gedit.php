@@ -49,10 +49,12 @@ if($act == 'edit'){
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-sm-2 control-label">BEpusdt 包月</label>
+			<label class="col-sm-2 control-label">原 BEpusdt 权益</label>
 			<div class="col-sm-10"><select name="config[bepusdt_enabled]" class="form-control"><option value="0">未开通</option><option value="1">允许商户自配 BEpusdt（直收、零按笔服务费）</option></select><p class="help-block">在会员售价中设置按月周期；到期停止新交易，在途订单继续确认。</p></div>
 		</div>
-		<div class="form-group"><label class="col-sm-2 control-label">网关账号数</label><div class="col-sm-10"><input name="config[bepusdt_accounts]" type="number" min="1" max="20" value="1" class="form-control"><p class="help-block">每个商户可保存和启用 1–20 个账号，首期网络为 USDT / TRC20。</p></div></div>
+		<div class="form-group"><label class="col-sm-2 control-label">网关账号数</label><div class="col-sm-10"><input name="config[bepusdt_accounts]" type="number" min="1" max="20" value="1" class="form-control"><p class="help-block">仅用于旧 BEpusdt 套餐；通用自助套餐使用下方总数。</p></div></div>
+        <div class="form-group"><label class="col-sm-2 control-label">商户自配通道</label><div class="col-sm-10"><select name="config[merchant_channels_enabled]" class="form-control"><option value="0">沿用原有渠道模式</option><option value="1">包月自助：商户配置自己的支付通道</option></select><p class="help-block">支付宝、微信、QQ、易支付及 BEpusdt。商户直收，零按笔平台服务费；未配置或到期不使用平台通道兜底。下方通道选择为“关闭”时仍禁止该支付方式；其余选项在自助模式下只表示开放。</p></div></div>
+        <div class="form-group"><label class="col-sm-2 control-label">自助账号总数</label><div class="col-sm-10"><input name="config[merchant_channels_accounts]" type="number" min="1" max="20" value="5" class="form-control"><p class="help-block">所有支付方式合计，包括支付宝原生码与 BEpusdt。请设置按月售价及周期。</p></div></div>
 		<div class="form-group">
 			<label class="col-sm-2 control-label">通道费率</label>
 			<div class="col-sm-10">

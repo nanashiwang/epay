@@ -19,8 +19,8 @@
   function loadError(e){message(e.message);if(!loaded){$('bep-plan').textContent='套餐读取失败，请重试；恢复前不能新增网关。';$('bep-accounts').replaceChildren(button('重新加载',()=>accounts().catch(loadError)));}}
   async function accounts(){
     const r=await api('list'),plan=r.subscription;active=plan.active;loaded=true;
-    $('bep-plan').textContent=`${plan.name} · ${plan.active?'使用中':'未开通或已到期'} · 有效期 ${plan.endtime||'未开通'} · 已用 ${r.data.length} / ${plan.limit} 个网关账号。`+(plan.active?'':' 可查看历史记录，请前往“我的套餐”购买或续期。');
-    $('bep-add').disabled=!active||r.data.length>=plan.limit;$('bep-add').title=r.data.length>=plan.limit?'账号数量已满，请归档闲置账号后再添加':'';$('bep-accounts').replaceChildren();
+    $('bep-plan').textContent=`${plan.name} · ${plan.active?'使用中':'未开通或已到期'} · 有效期 ${plan.endtime||'未开通'} · 已用 ${plan.used} / ${plan.limit} 个自助账号。`+(plan.active?'':' 可查看历史记录，请前往“我的套餐”购买或续期。');
+    $('bep-add').disabled=!active||plan.used>=plan.limit;$('bep-add').title=plan.used>=plan.limit?'账号数量已满，请归档闲置账号后再添加':'';$('bep-accounts').replaceChildren();
     if(!r.data.length)$('bep-accounts').append(node('p',active?'还没有网关账号。添加你自己的 BEpusdt 地址和 Token 即可开始接入。':'还没有网关账号。开通套餐后可添加自己的 BEpusdt。','collection-empty'));
     for(const a of r.data){
       const card=node('article','','collection-card'),top=node('div','','collection-card-top');
@@ -31,7 +31,7 @@
       actions.append(button('编辑',()=>edit(a),!active||!!Number(a.status)),button('校验接口',()=>action(a,'verify'),!active));
       actions.append(button('测试收款',async()=>{const amount=window.prompt('测试金额（人民币 0.10–100.00 元）。进入收银台后由你自行转账，不会自动扣款。','1.00');if(amount===null)return;const result=await api('test',{id:a.id,amount});window.location.assign(result.url);},!active||!a.verified_at));
       actions.append(button(Number(a.status)?'停用':'启用',()=>action(a,Number(a.status)?'disable':'enable',Number(a.status)?'停用后不再创建新交易，已创建的订单仍会处理到账。':null),!Number(a.status)&&(!active||!a.tested_at)));
-      actions.append(button(a.default_id?'取消默认':'设为默认',()=>action(a,a.default_id?'unroute':'default',a.default_id?'取消后新订单恢复平台配置的通道。确认取消？':'新 USDT / TRC20 订单将收至此网关的钱包。确认切换？'),!a.default_id&&(!active||!Number(a.status))));
+      actions.append(button(a.default_id?'取消默认':'设为默认',()=>action(a,a.default_id?'unroute':'default',a.default_id?'取消后此方式将停止使用该账号收款。确认取消？':'新 USDT / TRC20 订单将收至此网关的钱包。确认切换？'),!a.default_id&&(!active||!Number(a.status))));
       actions.append(button('归档',()=>action(a,'archive','归档后保留历史记录和在途订单处理。确认归档？'),!!Number(a.status)||!!a.default_id));card.append(actions);$('bep-accounts').append(card);
     }
   }

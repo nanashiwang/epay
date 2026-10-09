@@ -181,6 +181,8 @@ elseif($_GET['do']=='order'){
 	$expire_users = $DB->getAll("SELECT uid,gid,status,endtime FROM pre_user WHERE gid>0 AND endtime>0 AND endtime<NOW()");
 	foreach($expire_users as $row){
 		$group = $DB->getRow("SELECT * FROM pre_group WHERE gid='{$row['gid']}'");
+        // Preserve the expired SaaS plan: resetting gid would re-enable platform fallback.
+        if (\lib\MerchantSubscription::policy($group?:[])['enabled']) continue;
 		$gid = $group['orig'] > 0 ? $group['orig'] : 0;
 		$DB->exec("UPDATE pre_user SET gid={$gid},endtime=NULL WHERE uid='{$row['uid']}'");
 		if($row['status'] == 1){

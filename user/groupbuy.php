@@ -96,9 +96,9 @@ if($userrow['endtime'] && $mygroup['isbuy']==1) $gexpire.=' [<a href="javascript
 		<div class="list-group-item">
 		  <b>到期时间：</b><font color="green"><?php echo $gexpire?></font>
 		</div>
-		<?php if (!empty($conf['bepusdt_parent'])) {
+		<?php if (!empty($conf['bepusdt_parent']) || !empty($conf['merchant_channels'])) {
     $entitlement=\lib\MerchantSubscription::policy($mygroup?:[]);
-    ?><div class="list-group-item"><b>USDT 自助收款：</b><?php echo $entitlement['enabled'] && $userrow['endtime'] && strtotime($userrow['endtime'])>time()?'有效，最多 '.$entitlement['limit'].' 个账号':'未开通或已到期'; ?>。按自然月预付续期，月末按目标月份最后一天计算，不自动扣款。<a href="bepusdt.php">管理收款账号</a></div>
+    ?><div class="list-group-item"><b>商户自助收款：</b><?php echo $entitlement['enabled'] && $userrow['endtime'] && strtotime($userrow['endtime'])>time()?'有效，最多 '.$entitlement['limit'].' 个账号':'未开通或已到期'; ?>。按自然月预付续期，月末按目标月份最后一天计算，不自动扣款。<a href="<?php echo !empty($conf['merchant_channels'])?'channels.php':'bepusdt.php'; ?>">管理支付通道</a></div>
     <details class="list-group-item"><summary>最近 20 笔套餐付款与权益记录</summary><div class="table-responsive"><table class="table"><thead><tr><th>订单 / 时间</th><th>金额 / 月数</th><th>状态</th><th>原到期 / 新到期</th></tr></thead><tbody>
     <?php $events=$DB->getAll('SELECT P.trade_no,P.created_at,O.money,O.status,O.param,E.months,E.state,E.old_endtime,E.new_endtime FROM pre_subscription_purchase P JOIN pre_order O ON O.trade_no=P.trade_no LEFT JOIN pre_subscription_event E ON E.trade_no=P.trade_no WHERE P.uid=:uid ORDER BY P.created_at DESC LIMIT 20',[':uid'=>$uid]);
     foreach ($events?:[] as $event) { ?>
@@ -115,7 +115,7 @@ foreach($list as $res){
 		$visible = explode(',',$res['visible']);
 		if(!in_array($userrow['gid'], $visible))continue;
 	}
-	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.display_info($res['info']).(\lib\MerchantSubscription::policy($res)['enabled']?'<p class="text-success">USDT / TRC20 自助直收 · 零订单服务费 · 最多 '.\lib\MerchantSubscription::policy($res)['limit'].' 个账号</p>':'').'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
+	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.(\lib\MerchantSubscription::policy($res)['self_service']?'支付宝 / 微信 / QQ / 易支付 / USDT（以开放的支付方式及已签约产品为准）':display_info($res['info'])).(\lib\MerchantSubscription::policy($res)['enabled']?'<p class="text-success">'.(\lib\MerchantSubscription::policy($res)['self_service']?'商户自配支付通道':'USDT / TRC20 自助直收').' · 零订单服务费 · 最多 '.\lib\MerchantSubscription::policy($res)['limit'].' 个账号</p>':'').'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
 }
 ?>
 		  </tbody>

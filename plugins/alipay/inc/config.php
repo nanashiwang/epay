@@ -22,6 +22,8 @@ $alipay_config = [
 	'log_path' => dirname(__FILE__).'/log/',
 ];
 
+if(!empty($channel['merchant_managed'])) return $alipay_config;
+
 if(file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/appCertPublicKey_'.$channel['appid'].'.crt')){
 	$alipay_config['app_cert_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/appCertPublicKey_'.$channel['appid'].'.crt';
 	$alipay_config['alipay_cert_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appid'].'/alipayCertPublicKey_RSA2.crt';

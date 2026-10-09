@@ -559,7 +559,7 @@ function do_notify($url){
 		return false;
 	}
 	$meta=[];
-	$o=(!empty($conf['collection_parent']) || !empty($conf['bepusdt_parent'])) ? \lib\CollectionNotify::order($DB,$url) : null;
+	$o=(!empty($conf['collection_parent']) || !empty($conf['bepusdt_parent']) || !empty($conf['merchant_channels'])) ? \lib\CollectionNotify::order($DB,$url) : null;
 	$return = $o ? \lib\CollectionNotify::transport($url,$meta) : curl_get($url,$meta);
 	if ($o) {
 		try {
@@ -606,6 +606,8 @@ function processNotify($order, $api_trade_no=null, $buyer=null, $bill_trade_no =
 
 function processOrder(&$srow,$notify=true){
 	global $DB,$CACHE,$conf,$channel;
+    $subscriptionDirect=\lib\MerchantChannel::installed() && !empty($channel['collection_managed']) && $srow['money']==$srow['realmoney'] && $srow['money']==$srow['getmoney'];
+    if ($subscriptionDirect) $channel['costrate']=0;
 	$addmoney = $srow['getmoney'];
 	$reducemoney = round($srow['realmoney']-$srow['getmoney'], 2);
 	if($reducemoney<0)$reducemoney=0;
@@ -716,7 +718,7 @@ function processOrder(&$srow,$notify=true){
 		\lib\MsgNotice::send('order', $srow['uid'], ['trade_no'=>$srow['trade_no'], 'out_trade_no'=>$srow['out_trade_no'], 'name'=>$srow['name'], 'money'=>$srow['money'], 'type'=>$srow['typeshowname'], 'time'=>date('Y-m-d H:i:s'), 'tid'=>$srow['tid'], 'remark'=>$srow['param']]);
 
 		//邀请返现
-		if(!$conf['invite_mode']){
+		if(!$subscriptionDirect && !$conf['invite_mode']){
 			$upid = $DB->findColumn('user', 'upid', ['uid'=>$srow['uid']]);
 			if($upid > 0){
 				$upgid = $DB->findColumn('user', 'gid', ['uid'=>$upid]);

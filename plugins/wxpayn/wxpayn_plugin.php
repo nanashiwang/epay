@@ -453,6 +453,7 @@ class wxpayn_plugin
 		try{
 			$client = new \WeChatPay\V3\PaymentService($wechatpay_config);
 			$data = $client->notify();
+            if (!empty($channel['merchant_managed'])) \lib\MerchantChannel::receipt($data,$channel,$order);
 		} catch (Exception $e) {
 			$client->replyNotify(false, $e->getMessage());
 			exit;

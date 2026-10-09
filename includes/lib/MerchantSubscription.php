@@ -6,7 +6,9 @@ final class MerchantSubscription
     public static function policy(array $group)
     {
         $config=json_decode($group['config']??'{}',true)?:[];
-        return ['enabled'=>(int)($config['bepusdt_enabled']??0)===1,'limit'=>max(1,min(20,(int)($config['bepusdt_accounts']??1)))];
+        return ['enabled'=>(int)($config['merchant_channels_enabled']??0)===1 || (int)($config['bepusdt_enabled']??0)===1,
+            'self_service'=>(int)($config['merchant_channels_enabled']??0)===1,
+            'limit'=>max(1,min(20,(int)($config['merchant_channels_accounts']??$config['bepusdt_accounts']??1)))];
     }
 
     public static function current($db,$uid,$lock=false)
@@ -22,7 +24,7 @@ final class MerchantSubscription
     public static function requireActive($db,$uid,$lock=false)
     {
         [$user,$group,$policy]=self::current($db,$uid,$lock);
-        if (!$policy['active']) throw new \InvalidArgumentException('当前套餐未开通 BEpusdt 或已到期，请先购买或续期');
+        if (!$policy['active']) throw new \InvalidArgumentException('当前套餐未开通自助收款或已到期，请先购买或续期');
         if ((int)$user['status']!==1 || (int)$user['pay']!==1 || (!empty($GLOBALS['conf']['cert_force']) && !$user['cert'])) throw new \InvalidArgumentException('请先完成商户审核及实名认证');
         $info=!empty($group['info'])?$group['info']:$db->findColumn('group','info',['gid'=>0]);
         $policy['channels']=json_decode($info?:'{}',true)?:[];
@@ -42,13 +44,13 @@ final class MerchantSubscription
         if (empty($group['isbuy'])) throw new \InvalidArgumentException('当前套餐未上架');
         if (!empty($group['visible']) && !in_array((string)$user['gid'],explode(',',$group['visible']),true)) throw new \InvalidArgumentException('当前账号不可购买此套餐');
         if (!empty($user['gid']) && (int)$user['gid']!==(int)$group['gid'] && (!empty($user['endtime'])?strtotime($user['endtime'])>time():true)) throw new \InvalidArgumentException('当前套餐仍有效，请联系管理员处理套餐切换');
-        if ((int)$group['expire']<1 || (int)$group['expire']>120) throw new \InvalidArgumentException('BEpusdt 套餐须设置 1–120 个月的周期');
+        if ((int)$group['expire']<1 || (int)$group['expire']>120) throw new \InvalidArgumentException('自助收款套餐须设置 1–120 个月的周期');
     }
 
     public static function purchase($db,$uid,$gid,$num,$typeid,$requestKey)
     {
         global $conf,$siteurl,$clientip;
-        if (empty($conf['group_buy']) || empty($conf['bepusdt_parent'])) throw new \InvalidArgumentException('订阅购买尚未开通');
+        if (empty($conf['group_buy']) || (empty($conf['bepusdt_parent']) && empty($conf['merchant_channels']))) throw new \InvalidArgumentException('订阅购买尚未开通');
         if ($typeid<0 || $num<1 || $num>30) throw new \InvalidArgumentException('购买数量须为 1–30');
         return DbTransaction::run($db,function() use($db,$uid,$gid,$num,$typeid,$requestKey,$conf,$siteurl,$clientip) {
             [$user]=self::current($db,$uid,true);
@@ -102,7 +104,7 @@ final class MerchantSubscription
             $p=json_decode($o['param'],true);
             $purchase=$db->find('subscription_purchase','*',['trade_no'=>$trade]);
             if (!empty($o['subchannel'])) {
-                $managed=$db->find('bepusdt_account','id',['id'=>$o['subchannel']]) || $db->find('collection_account','id',['id'=>$o['subchannel']]);
+                $managed=MerchantChannel::isOrder($db,$o) || $db->find('bepusdt_account','id',['id'=>$o['subchannel']]) || $db->find('collection_account','id',['id'=>$o['subchannel']]);
                 if ($managed) throw new \InvalidArgumentException('平台套餐不得使用商户自助收款凭证');
             }
             if (!$purchase || (int)$purchase['uid']!==(int)$p['uid'] || BepusdtClient::decimal($p['price'],2)!==BepusdtClient::decimal($o['money'],2)) throw new \RuntimeException('订阅订单快照不一致');

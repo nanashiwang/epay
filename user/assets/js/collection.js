@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const form = $('account-form');
   const dialog = $('account-dialog');
-  let accounts = [], tab = 'accounts', page = 1, loading = false, recordRevision = 0;
+  let subscription = null, accounts = [], tab = 'accounts', page = 1, loading = false, recordRevision = 0;
   const text = (tag, value, className) => {
     const el = document.createElement(tag);
     el.textContent = value == null || value === '' ? '—' : String(value);
@@ -32,13 +32,13 @@
     if (result.code !== 0) throw new Error(result.msg || '读取失败');
     return result;
   }
-  function button(label, action, className = 'btn btn-default') {
+  function button(label, action, className = 'btn btn-default', disabled = false) {
     const b = text('button', label, className);
-    b.type = 'button';
+    b.type = 'button'; b.disabled=disabled;
     b.addEventListener('click', async () => {
       b.disabled = true;
       try { await action(); } catch (e) { message(e.message || '操作失败，请刷新重试'); }
-      finally { b.disabled = false; }
+      finally { b.disabled = disabled; }
     });
     return b;
   }
@@ -63,21 +63,26 @@
     for (const [key,value] of entries) { const row = document.createElement('div'); row.append(text('dt',key),text('dd',value)); dl.append(row); }
     card.append(dl);
     if (a.last_error) card.append(text('p', a.last_error));
+    const blocked=subscription && !subscription.active;
     const actions = document.createElement('div'); actions.className = 'collection-actions';
-    actions.append(button('编辑',() => openForm(a)),button('校验接口',() => action(a,'verify')));
-    actions.append(button(Number(a.status) ? '停用' : '启用监测',() => action(a,Number(a.status) ? 'disable' : 'enable',a.is_default && Number(a.status) ? '停用后，本商户的支付宝新订单将暂停收款。在途订单继续查账。确定停用？' : null)));
-    actions.append(button('测试收款',async () => { const result = await api('test',{id:a.id}); window.location.assign(result.url); }));
-    actions.append(button(a.is_default ? '取消默认' : '设为默认',() => action(a,a.is_default ? 'unroute' : 'default',a.is_default ? '取消后，新订单将恢复使用平台通道。确定取消？' : '请先测试并确认二维码收款方正确。设为默认后，你的支付宝新订单将直接收至此账号；平台余额仅承担服务费。确定切换？')));
+    actions.append(button('编辑',() => openForm(a),'btn btn-default',blocked||!!Number(a.status)),button('校验接口',() => action(a,'verify'),'btn btn-default',blocked));
+    actions.append(button(Number(a.status) ? '停用' : '启用监测',() => action(a,Number(a.status) ? 'disable' : 'enable',a.is_default && Number(a.status) ? '停用后，本商户的支付宝新订单将暂停收款。在途订单继续查账。确定停用？' : null),'btn btn-default',!Number(a.status)&&blocked));
+    actions.append(button('测试收款',async () => { const result = await api('test',{id:a.id}); window.location.assign(result.url); },'btn btn-default',blocked||!Number(a.status)));
+    actions.append(button(a.is_default ? '取消默认' : '设为默认',() => action(a,a.is_default ? 'unroute' : 'default',a.is_default ? (subscription?'取消后支付宝新订单停止使用该账号。确定取消？':'取消后，新订单将恢复使用平台通道。确定取消？') : '请先测试并确认二维码收款方正确。设为默认后，你的支付宝新订单将直接收至此账号。确定切换？'),'btn btn-default',!a.is_default&&(blocked||!Number(a.status))));
     actions.append(button('查看流水',() => { $('filter-account').value = String(a.id); return selectTab('receipt'); }));
+    actions.append(button('归档',()=>action(a,'archive','归档后保留历史记录。确认归档？'),'btn btn-default',!!Number(a.status)||a.is_default));
     card.append(actions); return card;
   }
   async function loadAccounts() {
-    const result = await read({act:'list'}); accounts = result.data;
+    const result = await read({act:'list'}); accounts = result.data; subscription=result.subscription;
+    $('add-account').disabled=!!subscription&&(!subscription.active||subscription.used>=subscription.limit);
+    $('collection-plan').hidden=!subscription;
+    if(subscription)$('collection-plan').textContent=`包月自助 · ${subscription.active?'使用中':'未开通或已到期'} · 到期 ${subscription.endtime||'未开通'} · 所有自助账号合计 ${subscription.used} / ${subscription.limit}`;
     const cards = $('accounts'); cards.replaceChildren();
     if (!accounts.length) cards.append(text('div','还没有收款账号。添加支付宝原生收款码与账单应用，开始配置。','collection-empty'));
     else accounts.forEach(a => cards.append(renderAccount(a)));
     const stats = $('account-stats'); stats.replaceChildren();
-    for (const [label,value] of [['收款账号',accounts.length],['监测在线',accounts.filter(a => a.health === '在线').length],['默认账号',accounts.some(a => a.is_default) ? '已设置' : '沿用平台通道']]) {
+    for (const [label,value] of [['收款账号',accounts.length],['监测在线',accounts.filter(a => a.health === '在线').length],['默认账号',accounts.some(a => a.is_default) ? '已设置' : (subscription?'未配置':'沿用平台通道')]]) {
       const span = document.createElement('span'); span.append(text('strong',value),document.createTextNode(label)); stats.append(span);
     }
     const selected = $('filter-account').value;

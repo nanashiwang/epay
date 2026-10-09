@@ -62,7 +62,7 @@ if($firstGetChannel){
 	$getmoney = $order['getmoney'];
 }
 
-if (!empty($submitData['bepusdt_managed'])) $realmoney=$getmoney=$order['money'];
+if ((!empty($submitData['bepusdt_managed']) || !empty($submitData['subscription_direct']))) $realmoney=$getmoney=$order['money'];
 
 // 判断通道单笔支付限额
 if(!empty($submitData['paymin']) && $submitData['paymin']>0 && $order['money']<$submitData['paymin']){
@@ -78,7 +78,7 @@ if($submitData['mode']==1 && $realmoney-$getmoney>$userrow['money']){
 
 if($firstGetChannel){
 	// 随机增减金额
-	if(empty($submitData['bepusdt_managed']) && empty($order['realmoney'])&&!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+	if(empty($submitData['bepusdt_managed']) && empty($submitData['subscription_direct']) && empty($order['realmoney'])&&!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
 
 	$resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
 	if($resCount == 0) sysmsg('更新订单失败，请返回重试！');

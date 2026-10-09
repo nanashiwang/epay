@@ -23,6 +23,11 @@ $wechatpay_config = [
 	'publickey_path' => PLUGIN_ROOT.$channel['plugin'].'/cert/public_key.pem',
 ];
 
+if (!empty($channel['merchant_managed'])) {
+    $wechatpay_config['sslcert_path']=''; $wechatpay_config['sslkey_path']='';
+    return $wechatpay_config;
+}
+
 if(file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_cert.pem') && file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_key.pem')){
 	$wechatpay_config['sslcert_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_cert.pem';
 	$wechatpay_config['sslkey_path'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_key.pem';

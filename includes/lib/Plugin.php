@@ -25,7 +25,7 @@ class Plugin {
 		$filename = PLUGIN_ROOT.$name.'/'.$name.'_plugin.php';
 		$classname = '\\'.$name.'_plugin';
 		if(file_exists($filename)){
-			include $filename;
+			include_once $filename;
 			if (class_exists($classname, false) && property_exists($classname, 'info')) {
 				return $classname::$info;
 			}else{
@@ -53,7 +53,8 @@ class Plugin {
 				$channelinfo = $userrow?$userrow['channelinfo']:null;
 				$channel = $order['subchannel'] > 0 ? \lib\Channel::getSub($order['subchannel']) : \lib\Channel::get($order['channel'], $channelinfo);
 				if(!$channel) throw new Exception('当前支付通道信息不存在');
-				$channel['apptype'] = explode(',',$channel['apptype']);
+                if (MerchantChannel::isOrder($DB,$order)) $channel=MerchantChannel::prepare($DB,$order,$channel,$func);
+			$channel['apptype'] = explode(',',$channel['apptype']);
 	
 				if(!empty($userrow['ordername']))$conf['ordername']=$userrow['ordername'];
 				$ordername = !empty($conf['ordername'])?ordername_replace($conf['ordername'],$order['name'],$order['uid'],$trade_no,$order['out_trade_no']):$order['name'];
@@ -87,6 +88,7 @@ class Plugin {
 			$channelinfo = $userrow?$userrow['channelinfo']:null;
 			$channel = $order['subchannel'] > 0 ? \lib\Channel::getSub($order['subchannel']) : \lib\Channel::get($order['channel'], $channelinfo);
 			if(!$channel)throw new Exception('当前支付通道信息不存在');
+            if (MerchantChannel::isOrder($DB,$order)) $channel=MerchantChannel::prepare($DB,$order,$channel,$func);
 			$channel['apptype'] = explode(',',$channel['apptype']);
 			if(!empty($userrow['ordername']))$conf['ordername']=$userrow['ordername'];
 			$ordername = !empty($conf['ordername'])?ordername_replace($conf['ordername'],$order['name'],$order['uid'],$trade_no,$order['out_trade_no']):$order['name'];
@@ -98,13 +100,18 @@ class Plugin {
 	}
 
 	static public function loadClass($plugin, $func, $trade_no){
+        global $channel;
+        if (!empty($channel['merchant_managed'])) {
+            if ($plugin!==$channel['plugin']) throw new Exception('支付插件与订单不匹配');
+            MerchantChannelCatalog::guard($channel,$func);
+        }
 		$filename = PLUGIN_ROOT.$plugin.'/'.$plugin.'_plugin.php';
 		$classname = '\\'.$plugin.'_plugin';
         if (file_exists($filename)) {
 			if(!defined("IN_PLUGIN")) define("IN_PLUGIN", true);
             define("PAY_ROOT", PLUGIN_ROOT.$plugin.'/');
             define("TRADE_NO", $trade_no);
-            include $filename;
+            include_once $filename;
             if (class_exists($classname, false) && method_exists($classname, $func)) {
                 return $classname::$func();
             } else {
@@ -134,7 +141,7 @@ class Plugin {
 		$filename = PLUGIN_ROOT.$name.'/'.$name.'_plugin.php';
 		$classname = '\\'.$name.'_plugin';
 		if(file_exists($filename)){
-			include $filename;
+			include_once $filename;
 			if (class_exists($classname, false) && method_exists($classname, 'refund')) {
 				return true;
 			}else{
@@ -153,6 +160,7 @@ class Plugin {
 			$message = '当前支付通道信息不存在';
 			return false;
 		}
+        if (!empty($channel['merchant_managed'])) { $message='请在自己的支付机构后台退款，平台暂不代发退款'; return false; }
 		$order['refund_no'] = $refund_no;
 		$order['refundmoney'] = $money;
 		$filename = PLUGIN_ROOT.$channel['plugin'].'/'.$channel['plugin'].'_plugin.php';
@@ -160,7 +168,7 @@ class Plugin {
 		$func = 'refund';
 		if($order['combine'] == 1) $func = 'refund_combine';
 		if(file_exists($filename)){
-			include $filename;
+			include_once $filename;
 			if (class_exists($classname, false) && method_exists($classname, $func)) {
 				if(!defined("IN_PLUGIN")) define("IN_PLUGIN", true);
 				define("PAY_ROOT", PLUGIN_ROOT.$channel['plugin'].'/');
@@ -195,7 +203,7 @@ class Plugin {
 		$func = 'close';
 		if($order['combine'] == 1) $func = 'close_combine';
 		if(file_exists($filename)){
-			include $filename;
+			include_once $filename;
 			if (class_exists($classname, false) && method_exists($classname, $func)) {
 				if(!defined("IN_PLUGIN")) define("IN_PLUGIN", true);
 				define("PAY_ROOT", PLUGIN_ROOT.$channel['plugin'].'/');
@@ -219,6 +227,7 @@ class Plugin {
 
 	static public function loadForAdmin($func){
 		global $channel;
+        if (!empty($channel['merchant_managed'])) throw new Exception('商户自助通道不开放此管理操作');
 		$filename = PLUGIN_ROOT.$channel['plugin'].'/'.$channel['plugin'].'_plugin.php';
 		$classname = '\\'.$channel['plugin'].'_plugin';
 		if(file_exists($filename)){
@@ -236,6 +245,7 @@ class Plugin {
 	}
 
 	static public function call($func, $channel, $bizParam = null){
+        if (!empty($channel['merchant_managed'])) return ['code'=>-1,'msg'=>'商户自助通道不开放此管理操作'];
 		$filename = PLUGIN_ROOT.$channel['plugin'].'/'.$channel['plugin'].'_plugin.php';
 		$classname = '\\'.$channel['plugin'].'_plugin';
 		if(file_exists($filename)){

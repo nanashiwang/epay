@@ -107,6 +107,7 @@ final class CollectionAccount
         $template=$this->db->getRow("SELECT * FROM pre_channel WHERE id=:id AND plugin='alipaycode' AND mode=1 AND status=0",[':id'=>$parent]);
         if (!$template || (json_decode($template['config'],true)['collection_managed']??null)!==1) throw new \RuntimeException('自助收款模板尚未配置');
         return $this->transaction(function() use($uid,$id,$old,$name,$alipay,$appid,$qr,$secrets,$parent) {
+            if (MerchantChannel::selfService($this->db,$uid)) { MerchantChannel::policy($this->db,$uid,true); MerchantChannel::quota($this->db,$uid,false,$id?0:1); }
             if ($old) {
                 $current=$this->owned($uid,$id,true);
                 if ((int)$current['status']!==0) throw new \InvalidArgumentException('请先停用账号再修改配置');
@@ -115,7 +116,7 @@ final class CollectionAccount
                 $this->db->update('subchannel',['name'=>$name],['id'=>$id,'uid'=>$uid]);
                 $this->db->update('collection_account',['appid'=>$appid,'secret'=>self::encrypt($secrets,$uid),'verified_at'=>null,'last_error'=>null,'last_ok'=>null,'heartbeat_at'=>null],['id'=>$id,'uid'=>$uid]);
             } else {
-                if ($this->db->getColumn('SELECT COUNT(*) FROM pre_collection_account WHERE uid=:uid AND deleted_at IS NULL',[':uid'=>$uid])>=10) throw new \InvalidArgumentException('每个商户最多添加 10 个收款账号');
+                if (!MerchantChannel::selfService($this->db,$uid) && $this->db->getColumn('SELECT COUNT(*) FROM pre_collection_account WHERE uid=:uid AND deleted_at IS NULL',[':uid'=>$uid])>=10) throw new \InvalidArgumentException('每个商户最多添加 10 个收款账号');
                 $id=$this->db->insert('subchannel',['channel'=>$parent,'uid'=>$uid,'name'=>$name,'status'=>0,'info'=>'{}','addtime'=>'NOW()','usetime'=>'NOW()']);
                 $this->db->insert('collection_account',['id'=>$id,'uid'=>$uid,'alipay_uid'=>$alipay,'appid'=>$appid,'qr_url'=>$qr,'secret'=>self::encrypt($secrets,$uid),'created_at'=>'NOW()']);
             }
@@ -136,6 +137,7 @@ final class CollectionAccount
 
     public function verify($uid,$id)
     {
+        if (MerchantChannel::selfService($this->db,$uid)) MerchantChannel::policy($this->db,$uid);
         $row=$this->owned($uid,$id);
         if ($row['checked_at'] && time()-strtotime($row['checked_at'])<15) throw new \InvalidArgumentException('请稍等 15 秒后再校验');
         $this->db->update('collection_account',['checked_at'=>'NOW()'],['id'=>$id]);
@@ -148,7 +150,9 @@ final class CollectionAccount
     public function action($uid,$id,$action)
     {
         return $this->transaction(function() use($uid,$id,$action) {
+            if (MerchantChannel::selfService($this->db,$uid)) MerchantSubscription::current($this->db,$uid,true);
             $r=$this->owned($uid,$id,true);
+            if (in_array($action,['enable','default'],true) && MerchantChannel::selfService($this->db,$uid)) MerchantChannel::quota($this->db,$uid,true,$action==='enable' && !$r['status']?1:0);
             if ($action==='enable') {
                 if (empty($r['verified_at'])) throw new \InvalidArgumentException('请先校验接口');
                 $this->db->update('subchannel',['status'=>1],['id'=>$id,'uid'=>$uid]);
@@ -157,6 +161,10 @@ final class CollectionAccount
                 $this->db->update('subchannel',['status'=>0],['id'=>$id,'uid'=>$uid]);
             } elseif ($action==='default') {
                 if ((int)$r['status']!==1 || self::health($r,time())!=='在线') throw new \InvalidArgumentException('只有已启用且监测在线的账号可设为默认');
+                if (MerchantChannel::installed()) {
+                    $type=$this->db->findColumn('channel','type',['id'=>$r['channel']]);
+                    $this->db->delete('merchant_channel_route',['uid'=>$uid,'type'=>$type]);
+                }
                 $this->db->exec('INSERT INTO pre_collection_route (uid,account_id) VALUES (:uid,:id) ON DUPLICATE KEY UPDATE account_id=VALUES(account_id)',[':uid'=>$uid,':id'=>$id]);
             } elseif ($action==='unroute') {
                 $this->db->delete('collection_route',['uid'=>$uid,'account_id'=>$id]);
@@ -177,6 +185,11 @@ final class CollectionAccount
         if (!$routes) return null;
         $route=$routes[0];
         try {
+            $direct=MerchantChannel::selfService($db,$uid);
+            if ($direct) {
+                $policy=MerchantChannel::quota($db,$uid,true);
+                if (isset($policy['channels'][$typeid]) && (int)$policy['channels'][$typeid]['channel']===0) return false;
+            }
             $r=(new self($db))->owned($uid,$route['account_id']);
             if ($r['status']!=1 || self::health($r,time())!=='在线') return false;
             $c=$db->getRow("SELECT * FROM pre_channel WHERE id=:id AND plugin='alipaycode' AND mode=1",[':id'=>$r['channel']]);
@@ -187,13 +200,17 @@ final class CollectionAccount
                 if ($c['timestart']<$c['timestop'] ? ($hour<$c['timestart'] || $hour>$c['timestop']) : ($hour<$c['timestart'] && $hour>$c['timestop'])) return false;
             }
             if ($money>0 && (($c['paymin']>0 && $money<$c['paymin']) || ($c['paymax']>0 && $money>$c['paymax']))) return false;
-            return ['typeid'=>$typeid,'typename'=>$typename,'plugin'=>'alipaycode','channel'=>$c['id'],'subchannel'=>$r['id'],'rate'=>$rate?:$c['rate'],'apptype'=>$c['apptype'],'mode'=>1,'paymin'=>$c['paymin'],'paymax'=>$c['paymax']];
+            return ['typeid'=>$typeid,'typename'=>$typename,'plugin'=>'alipaycode','channel'=>$c['id'],'subchannel'=>$r['id'],'subscription_direct'=>$direct?1:0,'rate'=>$direct?100:($rate?:$c['rate']),'apptype'=>$c['apptype'],'mode'=>1,'paymin'=>$c['paymin'],'paymax'=>$c['paymax']];
         } catch (\Throwable $e) { return false; }
     }
 
     public function reserve(array $order,array $channel)
     {
         require_once ROOT.'plugins/alipaycode/inc/NativeQr.php';
+        if (MerchantChannel::selfService($this->db,$order['uid'])) {
+            MerchantChannel::quota($this->db,$order['uid'],true);
+            if (BepusdtClient::decimal($order['money'],2)!==BepusdtClient::decimal($order['realmoney'],2) || BepusdtClient::decimal($order['money'],2)!==BepusdtClient::decimal($order['getmoney'],2)) throw new \InvalidArgumentException('包月收款金额不一致');
+        }
         $r=$this->owned($order['uid'],$channel['subid']);
         if ((int)$r['status']!==1 || self::health($r,time())!=='在线') throw new \RuntimeException('收款账号暂不可用，请联系商户');
         if (!in_array((int)$order['tid'],[0,3],true)) throw new \RuntimeException('自助收款账号仅用于商户订单和收款测试');

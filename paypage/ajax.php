@@ -37,7 +37,7 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 	}
 }
 
-$userrow = $DB->getRow("SELECT `mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
+$userrow = $DB->getRow("SELECT `gid`,`mode`,`ordername`,`channelinfo`,`money`,`pay_minmoney`,`pay_maxmoney` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
 
 if($userrow['pay_maxmoney']>0 && $money>$userrow['pay_maxmoney'])showerrorjson('最大支付金额是'.$userrow['pay_maxmoney'].'元');
 if($userrow['pay_minmoney']>0 && $money<$userrow['pay_minmoney'])showerrorjson('最小支付金额是'.$userrow['pay_minmoney'].'元');
@@ -73,6 +73,11 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 	$channelid = intval($_SESSION['paypage_channel']);
 	$subchannelid = intval($_SESSION['paypage_subchannel']);
 	if($direct==1){
+        $current=\lib\Channel::submit2($typeid,$uid,$userrow['gid'],$money);
+        if (!$current) showerrorjson('当前支付方式不可用，请联系收款商户');
+        $channelid=$current['channel']; $subchannelid=$current['subchannel'];
+        $_SESSION['paypage_rate']=$current['rate']; $_SESSION['paypage_mode']=$current['mode'];
+        $subscriptionDirect=!empty($current['subscription_direct']) || !empty($current['bepusdt_managed']);
 		if($userrow['mode']==1){
 			$realmoney = round($money*(100+100-$_SESSION['paypage_rate'])/100,2);
 			$getmoney = $money;
@@ -80,11 +85,12 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 			$realmoney = $money;
 			$getmoney = round($money*$_SESSION['paypage_rate']/100,2);
 		}
+        if ($subscriptionDirect) $realmoney=$getmoney=$money;
 		if($_SESSION['paypage_mode']==1 && $realmoney-$getmoney>$userrow['money']){
 			showerrorjson('当前商户余额不足，无法完成支付，请商户登录用户中心充值余额');
 		}
 
-		if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+		if(!$subscriptionDirect && !empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
 
 		$DB->update('order', ['type'=>$typeid, 'channel'=>$channelid, 'subchannel'=>$subchannelid, 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no]);
 

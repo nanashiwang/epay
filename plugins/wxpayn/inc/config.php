@@ -27,6 +27,15 @@ $wechatpay_config = [
     'platformCertificateSerial' => $channel['publickeyid'],
 ];
 
+if (!empty($channel['merchant_managed'])) {
+    $wechatpay_config['merchantPrivateKey']=$channel['merchant_private_key'];
+    $wechatpay_config['platformPublicKey']=$channel['platform_public_key'];
+    $wechatpay_config['merchantPrivateKeyFilePath']='';
+    $wechatpay_config['platformPublicKeyFilePath']='';
+    $wechatpay_config['platformCertificateFilePath']='';
+    return $wechatpay_config;
+}
+
 if(file_exists(PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_key.pem')){
     $wechatpay_config['merchantPrivateKeyFilePath'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/apiclient_key.pem';
 	$wechatpay_config['platformPublicKeyFilePath'] = PLUGIN_ROOT.$channel['plugin'].'/cert/'.$channel['appmchid'].'/pub_key.pem';

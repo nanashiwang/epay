@@ -28,7 +28,7 @@ class EpayCore
 
 		$html = '<form id="dopay" action="'.$this->submit_url.'" method="post">';
 		foreach ($param as $k=>$v) {
-			$html.= '<input type="hidden" name="'.$k.'" value="'.$v.'"/>';
+			$html.= '<input type="hidden" name="'.$k.'" value="'.htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8').'"/>';
 		}
 		$html .= '<input type="submit" value="'.$button.'"></form><script>document.getElementById("dopay").submit();</script>';
 
