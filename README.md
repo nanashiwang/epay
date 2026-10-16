@@ -161,6 +161,10 @@ docker-compose.yml
 
 商户购买包月服务后，可自行配置支付宝、微信、QQ、易支付兼容网关、支付宝收款码及 BEpusdt。管理员管理套餐与平台月费收款，无需为每位商户录入收款密钥。具体支持模式、显式迁移步骤和权限边界见[商户支付通道说明](docs/MERCHANT_CHANNELS.md)。
 
+## 开发协作与决策记录
+
+改动前先查阅[能力地图](docs/FEATURE_MAP.md)，核对真实入口、权限、实现与测试，再按[决策记录流程](docs/AGENT_NOTES.md)记录非平凡取舍。仓库已接入 project-decision-kit 1.0.1；开发机安装 Python 3.9+ 和 Bun 后，执行 `python3 .agents/workflow.py doctor` 检查安装，执行 `bash .agents/verify-notes.sh` 校验工具完整性和笔记。业务测试及生产验收仍按各模块要求执行。
+
 ## 用户帮助中心
 
 用户中心点击“帮助中心”，或访问本站 `/index.php?doc=help`，可按分类阅读、搜索操作步骤。支付通道、支付宝收款码、USDT / USDC 收款和套餐页面也提供对应教程入口，未登录用户同样可以阅读。
